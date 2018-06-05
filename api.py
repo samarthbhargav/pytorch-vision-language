@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_restful import Resource, Api
 from flask import url_for
+from flask_cors import CORS
 import os
 from data_api import DataApi
 from model_api import ExplanationModel, CounterFactualExplanationModel
@@ -8,11 +9,19 @@ from model_api import ExplanationModel, CounterFactualExplanationModel
 
 app = Flask(__name__, static_folder="data")
 api = Api(app)
-
+CORS(app)
 
 data_api = DataApi()
 explanation_model = ExplanationModel()
 cf_explanation_model = CounterFactualExplanationModel()
+
+def any_response(data):
+  ALLOWED = ['http://localhost:8888']
+  response = make_response(data)
+  origin = request.headers['Origin']
+  if origin in ALLOWED:
+    response.headers['Access-Control-Allow-Origin'] = origin
+  return response
 
 class AvailableClassesResource(Resource):
     def get(self):
@@ -40,8 +49,8 @@ class CounterFactualResource(Resource):
         path = os.path.join(*image["path"].split("/")[2:])
         del image["path"]
         image["url"] = url_for('static', filename=path)
-                
-    
+
+
 
 api.add_resource(AvailableClassesResource, '/classes')
 api.add_resource(CounterFactualResource, '/counter_factual/<string:class_true>/<string:class_false>')

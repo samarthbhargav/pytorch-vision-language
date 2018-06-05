@@ -2,12 +2,16 @@ import os
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from torch.nn.utils.rnn import pack_padded_sequence
 import numpy as np
 
 from utils.misc import to_var
 
-class LRCNTrainer:
+class GVETrainer:
+
+    REQ_EVAL = True
+
     def __init__(self, args, model, dataset, data_loader, logger, checkpoint=None):
         self.model = model
         self.dataset = dataset
@@ -28,29 +32,41 @@ class LRCNTrainer:
             self.num_epochs = args.num_epochs
             self.log_step = args.log_step
             self.curr_epoch = 0
+            self.rl_lambda = args.loss_lambda
 
     def train_epoch(self):
         # Result is list of losses during training
         # and generated captions during evaluation
         result = []
+        vocab = self.dataset.vocab
+        start_word = to_var(torch.LongTensor([vocab(vocab.start_token)]), self.cuda)
+        start_word = start_word.unsqueeze(0)
+        end_word = to_var(torch.LongTensor([vocab(vocab.end_token)]), self.cuda)
+        end_word = end_word.unsqueeze(0)
 
-        for i, (images, word_inputs, word_targets, lengths, ids) in enumerate(self.data_loader):
+        for i, (image_input, word_inputs, word_targets, lengths, ids, labels) in enumerate(self.data_loader):
             # Prepare mini-batch dataset
-            images = to_var(images, self.cuda)
+            image_input = to_var(image_input, self.cuda)
+            labels_onehot = torch.zeros(labels.size(0),
+                    self.dataset.num_classes)
+            labels_onehot.scatter_(1, labels.unsqueeze(1), 1)
+            labels_onehot = to_var(labels_onehot, self.cuda)
 
             if self.train:
                 word_inputs = to_var(word_inputs, self.cuda)
                 word_targets = to_var(word_targets, self.cuda)
                 word_targets = pack_padded_sequence(word_targets, lengths, batch_first=True)[0]
 
-                loss = self.train_step(images, word_inputs, word_targets, lengths)
+                loss = self.train_step(image_input, word_inputs, word_targets,
+                        lengths, start_word, end_word, labels, labels_onehot)
                 result.append(loss.data.item())
 
                 step = self.curr_epoch * self.total_steps + i + 1
                 self.logger.scalar_summary('batch_loss', loss.data.item(), step)
 
             else:
-                generated_captions = self.eval_step(images, ids)
+                generated_captions = self.eval_step(image_input, ids,
+                        start_word, end_word, labels_onehot)
                 result.extend(generated_captions)
 
             # TODO: Add proper logging
@@ -72,32 +88,48 @@ class LRCNTrainer:
         return result
 
 
-    def train_step(self, images, word_inputs, word_targets, lengths):
+    def train_step(self, image_input, word_inputs, word_targets, lengths,
+            start_word, end_word, labels, labels_onehot):
         # Forward, Backward and Optimize
         self.model.zero_grad()
-        outputs = self.model(images, word_inputs, lengths)
-        loss = self.criterion(outputs, word_targets)
+        outputs = self.model(image_input, word_inputs, lengths, labels_onehot)
+
+        # Reinforce loss
+        # Sample sentences
+        sample_ids, log_ps, lengths = self.model.generate_sentence(image_input, start_word,
+                end_word, labels_onehot, max_sampling_length=50, sample=True)
+        # Order sampled sentences/log_probabilities/labels by sentence length (required by LSTM)
+        lengths = lengths.cpu().numpy()
+        sort_idx = np.argsort(-lengths)
+        lengths = lengths[sort_idx]
+        sort_idx = torch.LongTensor(sort_idx)#.cuda()
+        labels = to_var(labels, self.cuda)
+        labels = labels[sort_idx]
+        log_ps = log_ps[sort_idx,:]
+        sample_ids = sample_ids[sort_idx,:]
+
+        class_pred = self.model.sentence_classifier(sample_ids, lengths)
+        class_pred = F.softmax(class_pred, dim=1)
+        rewards = class_pred.gather(1, labels.view(-1,1)).squeeze()
+        r_loss = -(log_ps.sum(dim=1) * rewards).sum()
+
+        loss = self.rl_lambda * r_loss/labels.size(0) + self.criterion(outputs, word_targets)
         loss.backward()
-        nn.utils.clip_grad_norm(self.params, 10)
+        #nn.utils.clip_grad_norm(self.params, 10)
         self.optimizer.step()
 
         return loss
 
-
-    def eval_step(self, images, ids):
-        vocab = self.dataset.vocab
-        start_word = to_var(torch.LongTensor([vocab(vocab.start_token)]), self.cuda)
-        start_word = start_word.unsqueeze(0)
-        end_word = to_var(torch.LongTensor([vocab(vocab.end_token)]), self.cuda)
-        end_word = end_word.unsqueeze(0)
-
+    def eval_step(self, image_input, ids, start_word, end_word, labels_onehot):
         # TODO: max_sampling_length
+        vocab = self.dataset.vocab
         generated_captions = []
-        outputs = self.model.sample(images, start_word, end_word)
+        outputs = self.model.generate_sentence(image_input, start_word,
+                end_word, labels_onehot)
         for out_idx in range(len(outputs)):
             sentence = []
             for w in outputs[out_idx]:
-                word = vocab.get_word_from_idx(w.data[0])
+                word = vocab.get_word_from_idx(w.data.item())
                 if word != vocab.end_token:
                     sentence.append(word)
                 else:

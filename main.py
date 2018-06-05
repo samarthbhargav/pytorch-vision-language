@@ -7,11 +7,12 @@ from train.trainer_loader import TrainerLoader
 from utils.data.data_prep import DataPreparation
 import utils.arg_parser
 from utils.logger import Logger
+from utils.misc import get_split_str
+
 
 import torch
 
 if __name__ == '__main__':
-
 
     # Parse arguments
     args = utils.arg_parser.get_args()
@@ -21,16 +22,13 @@ if __name__ == '__main__':
     if args.cuda:
         torch.cuda.set_device(args.cuda_device)
 
-    job_string = time.strftime("{}-{}-D%Y-%m-%d-T%H-%M-%S".format(args.model, args.dataset))
+    job_string = time.strftime("{}-{}-D%Y-%m-%d-T%H-%M-%S-G{}".format(args.model, args.dataset, args.cuda_device))
 
     job_path = os.path.join(args.checkpoint_path, job_string)
 
 
     # Create new checkpoint directory
-    if os.path.exists(job_path):
-        i = 1
-        while os.path.exists(job_path + '-P{}'.format(i)):
-            i += 1
+    #if not os.path.exists(job_path):
     os.makedirs(job_path)
 
     # Save job arguments
@@ -39,13 +37,13 @@ if __name__ == '__main__':
 
     # Data preparation
     print("Preparing Data ...")
-    data_prep = DataPreparation(args.data_path, batch_size=args.batch_size,
-                                num_workers=args.num_workers)
-    data_creator = getattr(data_prep, args.dataset)
-    dataset, data_loader = data_creator(args.pretrained_model, args.train)
-
+    split = get_split_str(args.train)
+    data_prep = DataPreparation(args.dataset, args.data_path)
+    dataset, data_loader = data_prep.get_dataset_and_loader(split, args.pretrained_model,
+            batch_size=args.batch_size, num_workers=args.num_workers)
     if args.train:
-        val_dataset, val_data_loader = data_creator(args.pretrained_model, False)
+        val_dataset, val_data_loader = data_prep.get_dataset_and_loader('val',
+                args.pretrained_model, batch_size=args.batch_size, num_workers=args.num_workers)
 
     # TODO: If eval + checkpoint load validation set
 
@@ -62,6 +60,8 @@ if __name__ == '__main__':
         model.load_state_dict(torch.load("/home/stephan/HDD/lrcn-31-1000.pkl",
             map_location=lambda storage, loc: storage), strict=False)
         model.eval()
+
+    val_dataset.set_label_usage(dataset.return_labels)
 
     # Create logger
     logger = Logger(os.path.join(job_path, 'logs'))
@@ -92,8 +92,13 @@ if __name__ == '__main__':
             checkpoint_name = "ckpt-e{}".format(trainer.curr_epoch)
             checkpoint_path = os.path.join(job_path, checkpoint_name)
 
+            model.eval()
             result = evaluator.train_epoch()
-            score = val_dataset.eval(result, checkpoint_path)
+            if evaluator.REQ_EVAL:
+                score = 0 #val_dataset.eval(result, checkpoint_path)
+            else:
+                score = 0 #result
+            model.train()
 
             logger.scalar_summary('score', score, trainer.curr_epoch)
 

@@ -22,14 +22,16 @@ def get_args():
                         help="disable the use of CUDA")
     parser.add_argument('--cuda-device', type=int , default=0,
                         help="specify which GPU to use")
+    parser.add_argument('--torch-seed', type=int,
+                        help="set a torch seed")
 
 
     # Model parameters
     parser.add_argument('--model', type=str, default='lrcn',
                         help="deep learning model",
-                        choices=['lrcn'])
+                        choices=['lrcn', 'gve', 'sc'])
     parser.add_argument('--dataset', type=str, default='coco',
-                        choices=['coco'])
+                        choices=['coco', 'cub'])
     parser.add_argument('--pretrained-model', type=str, default='vgg16',
                         help="[LRCN] name of pretrained model for image features",
                         choices=PretrainedModel.SUPPORTED_MODEL_NAMES)
@@ -37,6 +39,12 @@ def get_args():
                         help="[LRCN] number of final FC layers to be removed from pretrained model")
     parser.add_argument('--not-factored', action='store_true',
                         help="[LRCN] model will not factor word and image input to LSTMs")
+    parser.add_argument('--sc-ckpt', type=str, default='data/cub/sentence_classifier_ckpt.pth',
+                        help="[GVE] path to checkpoint for pretrained sentence classifier")
+    parser.add_argument('--weights-ckpt', type=str,
+                        help="[GVE] path to checkpoint for pretrained weights")
+    parser.add_argument('--loss-lambda', type=float, default=0.01,
+                        help="[GVE] weight factor for reinforce loss")
 
     parser.add_argument('--embedding-size', type=int , default=1000,
                         help='dimension of the word embedding')
@@ -63,7 +71,14 @@ def get_args():
     arg_vars["train"] = not args.eval
     del arg_vars["eval"]
 
-    arg_vars["torch_seed"] = torch.initial_seed()
+    # GVE currently does not support pretrained models
+    if arg_vars["model"] == "gve":
+        arg_vars["pretrained_model"] = None
+
+    if args.torch_seed is not None:
+        torch.manual_seed(arg_vars["torch_seed"])
+    else:
+        arg_vars["torch_seed"] = torch.initial_seed()
 
     return args
 

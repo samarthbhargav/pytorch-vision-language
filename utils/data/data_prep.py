@@ -3,73 +3,52 @@ import os
 
 # Third party packages
 import torch
+import torchvision.transforms as transforms
 
 # Local packages
-from .coco_dataset import CocoDataset
+# from .coco_dataset import CocoDataset
+from .cub_dataset import CubDataset
 from utils.transform import get_transform
 
 class DataPreparation:
-    def __init__(self, data_path='./data', batch_size=128, num_workers=4):
-        self.data_path = data_path
-        self.batch_size = batch_size
-        self.num_workers = num_workers
+    def __init__(self, dataset_name='coco', data_path='./data'):
+        if dataset_name == 'coco':
+            self.DatasetClass = CubDataset#CocoDataset
+        elif dataset_name == 'cub':
+            self.DatasetClass = CubDataset
+        self.data_path = os.path.join(data_path, self.DatasetClass.dataset_prefix)
 
-    def coco(self, vision_model, train, vocab=None, tokens=None):
-        if tokens is None:
-            tokens = CocoDataset.get_tokenized_captions(self.data_path, train)
-        if vocab is None:
-            if train:
-                tokens_train = tokens
-            else:
-                tokens_train = CocoDataset.get_tokenized_captions(self.data_path, True)
-            vocab = CocoDataset.get_vocabulary(self.data_path, tokens_train)
+    def get_dataset(self, split='train', vision_model=None, vocab=None,
+            tokens=None):
+        transform = get_transform(vision_model, split)
+        dataset = self.DatasetClass(root=self.data_path,
+                                    split=split,
+                                    vocab=vocab,
+                                    tokenized_captions=tokens,
+                                    transform=transform)
+        self.dataset = dataset
+        return self.dataset
 
-        if train:
-            images_path = CocoDataset.image_train_path
-            cap_path = CocoDataset.caption_train_path
-            ids_based_on = CocoDataset.ID_BASE.CAPTIONS
+    def get_loader(self, dataset, batch_size=128, num_workers=4):
+        assert isinstance(dataset, self.DatasetClass)
+
+        if dataset.split == 'train':
+            shuffle = True
         else:
-            images_path = CocoDataset.image_val_path
-            cap_path = CocoDataset.caption_val_path
-            ids_based_on = CocoDataset.ID_BASE.IMAGES
+            shuffle = False
 
-        images_path = os.path.join(self.data_path, images_path)
-        cap_path = os.path.join(self.data_path, cap_path)
-        transform = get_transform(vision_model, train)
+        data_loader = torch.utils.data.DataLoader(dataset=dataset,
+                                                  batch_size=batch_size,
+                                                  shuffle=shuffle,
+                                                  num_workers=num_workers,
+                                                  collate_fn=dataset.collate_fn)
+
+        return data_loader
 
 
-        dataset, loader = self.prepare_coco_loader(images_path,
-                                                   cap_path,
-                                                   vocab,
-                                                   tokens,
-                                                   ids_based_on,
-                                                   transform,
-                                                   train)
-
+    def get_dataset_and_loader(self, split='train', vision_model=None,
+            vocab=None, tokens=None, batch_size=128, num_workers=4):
+        dataset = self.get_dataset(split, vision_model, vocab, tokens)
+        loader = self.get_loader(dataset, batch_size, num_workers)
         return dataset, loader
 
-
-    def prepare_coco_loader(self, images_path, captions_path, vocab, tokens,
-                            ids_based_on, transform, shuffle):
-        """Returns torch.utils.data.DataLoader for custom coco dataset."""
-        # COCO caption dataset
-
-        coco_dataset = CocoDataset(root=images_path,
-                                   json=captions_path,
-                                   vocab=vocab,
-                                   tokenized_captions=tokens,
-                                   ids_based_on=ids_based_on,
-                                   transform=transform)
-
-        # Data loader for COCO dataset
-        # This will return (images, captions, lengths) for every iteration.
-        # images: tensor of shape (batch_size, 3, 224, 224).
-        # captions: tensor of shape (batch_size, padded_length).
-        # lengths: list indicating valid length for each caption. length is (batch_size).
-        coco_loader = torch.utils.data.DataLoader(dataset=coco_dataset,
-                                                  batch_size=self.batch_size,
-                                                  shuffle=shuffle,
-                                                  num_workers=self.num_workers,
-                                                  collate_fn=CocoDataset.collate_fn)
-
-        return coco_dataset, coco_loader

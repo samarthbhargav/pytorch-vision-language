@@ -25,6 +25,7 @@
   "dependencies": {
     "express": "^4.13.1",
     "gulp-sass": "^2.3.2",
-    "jshint": "*"
+    "jshint": "*",
+    "python-shell": "^0.5.0"
   }
 }

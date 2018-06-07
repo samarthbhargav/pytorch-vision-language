@@ -156,6 +156,10 @@ img.article-image {
         .loading {
             margin: auto;
             padding: 250px 100px;
+
+            .mdl-progress {
+                margin: auto;
+            }
         }
 
         .answer {

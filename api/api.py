@@ -1,33 +1,18 @@
-from flask import Flask
-from flask_restful import Resource, Api
-from flask import url_for
-from flask_cors import CORS
 import os
+import sys
+import json
 from data_api import DataApi
 from model_api import ExplanationModel, CounterFactualExplanationModel
-
-
-app = Flask(__name__, static_folder="data")
-api = Api(app)
-CORS(app)
 
 data_api = DataApi()
 explanation_model = ExplanationModel()
 cf_explanation_model = CounterFactualExplanationModel()
 
-def any_response(data):
-  ALLOWED = ['http://localhost:8888']
-  response = make_response(data)
-  origin = request.headers['Origin']
-  if origin in ALLOWED:
-    response.headers['Access-Control-Allow-Origin'] = origin
-  return response
-
-class AvailableClassesResource(Resource):
+class AvailableClassesResource():
     def get(self):
         return data_api.get_classes()
 
-class CounterFactualResource(Resource):
+class CounterFactualResource():
     def get(self, class_true, class_false):
         true_image = data_api.sample_class(class_true)
         false_image = data_api.sample_class(class_false)
@@ -48,12 +33,17 @@ class CounterFactualResource(Resource):
 
         path = os.path.join(*image["path"].split("/")[2:])
         del image["path"]
-        image["url"] = url_for('static', filename=path)
+        image["url"] = '/' + path
 
-
-
-api.add_resource(AvailableClassesResource, '/classes')
-api.add_resource(CounterFactualResource, '/counter_factual/<string:class_true>/<string:class_false>')
-
-if __name__ == '__main__':    
-    app.run(debug=False)
+if __name__ == '__main__':
+    if sys.argv[1] == 'classes':
+        classResource = AvailableClassesResource()
+        print(json.dumps(classResource.get()))
+    elif sys.argv[1] == 'counterfactual':
+        if len(sys.argv) == 4:
+            counterFactualResource = CounterFactualResource()
+            print(json.dumps(counterFactualResource.get(sys.argv[2], sys.argv[3])))
+        else:
+            print(json.dumps('Bad Parameters'))
+    else:
+        print(json.dumps('Unhandled Request'))

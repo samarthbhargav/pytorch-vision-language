@@ -4,8 +4,8 @@ angular.module('gveApp', [])
 
         $scope.load_classes = function () {
             $scope.classes = [];
-            $http.get('http://localhost:5000/classes').then(function (response) {
-                $scope.classes = response.data;
+            $http.get('/api/classes').then(function (response) {
+                $scope.classes = response.data.message;
                 $scope.retry();
             });
         };
@@ -21,10 +21,15 @@ angular.module('gveApp', [])
             var classes = angular.copy($scope.classes);
             classes.splice(index, 1);
             var class2 = classes[Math.floor(Math.random() * classes.length)];
-            $http.get('http://localhost:5000/counter_factual/' + class1 + '/' + class2).then(function (response) {
-                $scope.explanation = response.data.images[0].explanation;
-                $scope.correct_class_label = response.data.images[0].class_label;
-                $scope.images = shuffle(response.data.images);
+            $http.get('/api/counterfactual', {
+                params: {
+                    class_true: class1,
+                    class_false: class2
+                }
+            }).then(function (response) {
+                $scope.explanation = response.data.message.images[0].explanation;
+                $scope.correct_class_label = response.data.message.images[0].class_label;
+                $scope.images = shuffle(response.data.message.images);
                 $scope.loading = false;
                 $scope.answered = false;
                 $scope.result = false;

@@ -58,12 +58,12 @@
                                                 <h5>{{explanation}}</h5>
                                             </div>
                                         </div>
-                                        <div class="demo-card-image mdl-card mdl-shadow--2dp image_card" ng-repeat="image in images">
+                                        <div class="demo-card-image mdl-card mdl-shadow--2dp image_card" ng-repeat="image in images" ng-click="select(image)">
                                             <div class="mdl-card__title mdl-card--expand">
-                                                <img ng-src="http://localhost:5000{{image.url}}" height=250 width=300 alt="">
+                                                <img ng-src="/image{{image.url}}" height=250 width=300 alt="">
                                             </div>
                                             <div class="mdl-card__actions mdl-card--border">
-                                                <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect card_action" ng-click="select(image)">Select</a>
+                                                <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect card_action">Select</a>
                                             </div>
                                         </div>
                                     </div>
@@ -76,7 +76,7 @@
                                         </div>
                                         <div class="demo-card-image mdl-card mdl-shadow--2dp image_card" ng-repeat="image in images">
                                             <div class="mdl-card__title mdl-card--expand">
-                                                <img ng-src="http://localhost:5000{{image.url}}" height=250 width=300 alt="">
+                                                <img ng-src="/image{{image.url}}" height=250 width=300 alt="">
                                             </div>
                                             <div class="mdl-card__supporting-text">
                                                 {{image.explanation}}

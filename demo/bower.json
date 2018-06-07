@@ -1,0 +1,25 @@
+{
+  "name": "sandbox",
+  "version": "1.0.0",
+  "description": "bower",
+  "authors": [
+    "Gulfaraz Yasin"
+  ],
+  "license": "MIT",
+  "homepage": "gulfaraz.com",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular": "~1.5.3",
+    "material-design-lite": "^1.3.0",
+    "getmdl-select": "^1.1.0"
+  },
+  "install": {
+    "path": "public/src/lib"
+  }
+}

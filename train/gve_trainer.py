@@ -50,4 +50,3 @@ class GVETrainer(LRCNTrainer):
         self.optimizer.step()
 
         return loss
-

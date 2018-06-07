@@ -1,0 +1,24 @@
+@import "variables.scss";
+
+$button-colors: (
+    blue : $blue,
+    red : $red,
+    green : $green,
+    purple : $purple,
+    yellow : $yellow,
+    orange : $orange
+);
+
+@each $colorName, $color in $button-colors {
+    .#{$colorName}_button {
+        background-color: lighten($color, $lightener);
+        border-color: darken($color, $darkener);
+        color: lighten($gray, $lightener * $superlative);
+        &:hover,
+        &:focus {
+            &:not([disabled="disabled"]) {
+                background-color: darken($color, $darkener);
+            }
+        }
+    }
+}

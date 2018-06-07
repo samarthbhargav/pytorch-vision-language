@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Generating Visual Explanations</title>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="description" content="Generating Visual Explanations">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+        <title>Generating Visual Explanations</title>
+        <link rel="stylesheet" href="css/lib.css">
+        <link rel="stylesheet" href="css/main.css">
+    </head>
+    <body ng-app="gveApp">
+        <section ng-controller="MainCtrl">
+            <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header mdl-layout--fixed-tabs">
+                <header class="mdl-layout__header mdl-layout__header--waterfall portfolio-header">
+                    <div class="mdl-layout__header-row">
+                        <span class="mdl-layout-title">Generating Visual Explanations</span>
+                    </div>
+                    <div class="mdl-layout__tab-bar portfolio-navigation-row">
+                        <a href="#paper" class="mdl-layout__tab is-active">Paper</a>
+                        <a href="#demo" class="mdl-layout__tab">Demo</a>
+                        <a href="#team" class="mdl-layout__tab">Team</a>
+                    </div>
+                </header>
+                <main class="mdl-layout__content">
+                    <section class="mdl-layout__tab-panel is-active" id="paper">
+                        <div class="portfolio-max-width paper-page">
+                            <h6>This is a paper.</h6>
+                            <h6>This is a paper based on the papers in the references.</h6>
+                            <h6>I invoke your imagination.</h6>
+                            <h6>Imagine birds.</h6>
+                            <h6>No ? <a href="https://www.google.com/search?q=birds">I help</a>.</h6>
+                            <h6>So... birds.</h6>
+                            <h6>Lots of birds.</h6>
+                            <h6>This is not a paper on birds.</h6>
+                            <h6>This is still a paper.</h6>
+                            <div>
+                                References:
+                                <ol>
+                                    <li>Hendricks, L.A., Akata, Z., Rohrbach, M., Donahue, J., Schiele, B. and Darrell, T., 2016, October. <b>Generating visual explanations.</b> In European Conference on Computer Vision (pp. 3-19). Springer, Cham.</li>
+                                    <li>Selvaraju, R.R., Cogswell, M., Das, A., Vedantam, R., Parikh, D. and Batra, D., 2016. <b>Grad-cam: Visual explanations from deep networks via gradient-based localization.</b> See <a href="https://arxiv.org/abs/1610.02391/v3">arXiv.org</a>, 7(8).</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </section>
+                    <section class="mdl-layout__tab-panel" id="demo">
+                        <div class="mdl-grid portfolio-max-width demo-page">
+                            <div class="counterfactual">
+                                <div class="loading" ng-class="{'visible' : loading}">
+                                    <div class="mdl-progress mdl-js-progress mdl-progress__indeterminate"></div>
+                                </div>
+                                <div class="content" ng-class="{'visible' : !loading}">
+                                    <div class="question" ng-class="{'visible' : !answered}">
+                                        <h6>Select the image which is described by the sentence below</h6>
+                                        <div class="mdl-card mdl-shadow--2dp explanation_card">
+                                            <div class="mdl-card__supporting-text">
+                                                <h5>{{explanation}}</h5>
+                                            </div>
+                                        </div>
+                                        <div class="demo-card-image mdl-card mdl-shadow--2dp image_card" ng-repeat="image in images">
+                                            <div class="mdl-card__title mdl-card--expand">
+                                                <img ng-src="http://localhost:5000{{image.url}}" height=250 width=300 alt="">
+                                            </div>
+                                            <div class="mdl-card__actions mdl-card--border">
+                                                <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect card_action" ng-click="select(image)">Select</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="answer" ng-class="{'visible' : answered}">
+                                        <h6>You selected the <span ng-class="{ 'correct': result, 'incorrect': !result }">{{ result ? "CORRECT" : "INCORRECT" }}</span> image</h6>
+                                        <div class="mdl-card mdl-shadow--2dp explanation_card">
+                                            <div class="mdl-card__supporting-text">
+                                                <h5>{{explanation}}</h5>
+                                            </div>
+                                        </div>
+                                        <div class="demo-card-image mdl-card mdl-shadow--2dp image_card" ng-repeat="image in images">
+                                            <div class="mdl-card__title mdl-card--expand">
+                                                <img ng-src="http://localhost:5000{{image.url}}" height=250 width=300 alt="">
+                                            </div>
+                                            <div class="mdl-card__supporting-text">
+                                                {{image.explanation}}
+                                            </div>
+                                            <div class="mdl-card__actions mdl-card--border reveal_actions">
+                                                <label class="reveal_label correct_label" ng-show="correct_class_label == image.class_label">CORRECT</label>
+                                                <label class="reveal_label incorrect_label" ng-show="correct_class_label != image.class_label">INCORRECT</label>
+                                            </div>
+                                        </div>
+                                        <div class="retry">
+                                            <a class="mdl-button mdl-button--colored mdl-js-button mdl-button--raised mdl-js-ripple-effect retry-button" ng-click="retry()">Try Again</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    <section class="mdl-layout__tab-panel" id="team">
+                        <div class="mdl-grid portfolio-max-width team-page">
+                            <div class="mdl-card mdl-shadow--2dp">
+                                <div class="mdl-card__title">
+                                    <h2 class="mdl-card__title-text">Dr. Zeynep Akata</h2>
+                                </div>
+                                <div class="mdl-card__media">
+                                    <img src="https://i.pinimg.com/originals/b7/57/ea/b757ea9ed01cb80e1af7eb1dd8368cde.png" height=150 width=200 alt="">
+                                </div>
+                                <div class="mdl-card__supporting-text">
+                                    Assistant Professor with the University of Amsterdam in the Netherlands, Scientific Manager of the Delta Lab and a Senior Researcher at the Max Planck Institute for Informatics in Germany.
+                                </div>
+                                <div class="mdl-card__actions mdl-card--border">
+                                    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect card_action" href="https://ivi.fnwi.uva.nl/uvaboschdeltalab/people/zeynep-akata/">Website</a>
+                                    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect card_action" href="mailto:z.akata@uva.nl?subject=Generating Visual Explanations">Contact</a>
+                                </div>
+                            </div>
+                            <div class="mdl-card mdl-shadow--2dp">
+                                <div class="mdl-card__title">
+                                    <h2 class="mdl-card__title-text">Dr. Samarth Bhargav</h2>
+                                </div>
+                                <div class="mdl-card__media">
+                                    <img src="http://www.dreamworks.com/kungfupanda/images/uploads/characters/po_action.png" height=150 width=200 alt="">
+                                </div>
+                                <div class="mdl-card__supporting-text">
+                                    Uber Nerd
+                                </div>
+                                <div class="mdl-card__actions mdl-card--border">
+                                    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect card_action" href="http://samarthbhargav.github.io/">Website</a>
+                                    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect card_action" href="mailto:samarth.bhargav@student.uva.nl?subject=Generating Visual Explanations">Contact</a>
+                                </div>
+                            </div>
+                            <div class="mdl-card mdl-shadow--2dp">
+                                <div class="mdl-card__title">
+                                    <h2 class="mdl-card__title-text">Dr. Daniel Daza</h2>
+                                </div>
+                                <div class="mdl-card__media">
+                                    <img src="https://vignette.wikia.nocookie.net/fictionalcharacters/images/a/a0/Tai_Lung.png/revision/latest?cb=20131213020315" height=150 width=200 alt="">
+                                </div>
+                                <div class="mdl-card__supporting-text">
+                                    Nerd #2
+                                </div>
+                                <div class="mdl-card__actions mdl-card--border">
+                                    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect card_action" href="https://dfdazac.github.io/">Website</a>
+                                    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect card_action" href="mailto:dfdazac@gmail.com?subject=Generating Visual Explanations">Contact</a>
+                                </div>
+                            </div>
+                            <div class="mdl-card mdl-shadow--2dp">
+                                <div class="mdl-card__title">
+                                    <h2 class="mdl-card__title-text">Dr. Christina Winkler</h2>
+                                </div>
+                                <div class="mdl-card__media">
+                                    <img src="https://images.wikia.nocookie.net/__cb20170630071551/dreamworks/images/thumb/3/39/Tigress_icon_sfx.png/130px-0%2C400%2C7%2C361-Tigress_icon_sfx.png" height=150 width=200 alt="">
+                                </div>
+                                <div class="mdl-card__supporting-text">
+                                    Nerd #3
+                                </div>
+                                <div class="mdl-card__actions mdl-card--border">
+                                    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect card_action" href="#">Website</a>
+                                    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect card_action" href="mailto:christina.winkler.94@gmail.com?subject=Generating Visual Explanations">Contact</a>
+                                </div>
+                            </div>
+                            <div class="mdl-card mdl-shadow--2dp">
+                                <div class="mdl-card__title">
+                                    <h2 class="mdl-card__title-text">Emperor Gulfaraz Rahman</h2>
+                                </div>
+                                <div class="mdl-card__media">
+                                    <img src="https://images.wikia.nocookie.net/__cb20170518111422/dreamworks/images/thumb/c/ce/Picture4.png/130px-0%2C414%2C6%2C372-Picture4.png" height=150 width=200 alt="">
+                                </div>
+                                <div class="mdl-card__supporting-text">
+                                    Noob
+                                </div>
+                                <div class="mdl-card__actions mdl-card--border">
+                                    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect card_action" href="http://gulfaraz.com/">Website</a>
+                                    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect card_action" href="mailto:gulfarazyasin@gmail.com?subject=Generating Visual Explanations">Contact</a>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    <footer class="mdl-mini-footer">
+                        <div class="mdl-mini-footer__left-section">
+                            <div class="mdl-logo">&copy; 2018 University of Amsterdam</div>
+                        </div>
+                        <div class="mdl-mini-footer__right-section">
+                            <ul class="mdl-mini-footer__link-list">
+                                <li><a href="http://uva.nl">UvA</a></li>
+                            </ul>
+                        </div>
+                    </footer>
+                </main>
+            </div>
+        </section>
+        <script src="js/main.js"></script>
+    </body>
+</html>

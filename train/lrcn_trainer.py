@@ -100,6 +100,8 @@ class LRCNTrainer:
         vocab = self.dataset.vocab
         generated_captions = []
         outputs = self.model.generate_sentence(image_input, self.start_word, self.end_word, *args)
+        if outputs.dim() == 1:
+            outputs = outputs.unsqueeze(0)
         for out_idx in range(len(outputs)):
             sentence = []
             for w in outputs[out_idx]:
@@ -111,4 +113,3 @@ class LRCNTrainer:
             generated_captions.append({"image_id": ids[out_idx], "caption": ' '.join(sentence)})
 
         return generated_captions
-

@@ -19,7 +19,7 @@ module.exports = function (express) {
     router.get(api_root + '/classes', function (req, res) {
         PythonShell.run('api.py', {
             mode: 'json',
-            pythonPath: '/anaconda/bin/python',
+            pythonPath: '/usr/bin/python',
             pythonOptions: [ '-u' ],
             scriptPath: '../api',
             args: [ 'classes' ]
@@ -33,7 +33,7 @@ module.exports = function (express) {
     router.get(api_root + '/counterfactual', function (req, res) {
         PythonShell.run('api.py', {
             mode: 'json',
-            pythonPath: '/anaconda/bin/python',
+            pythonPath: '/usr/bin/python',
             pythonOptions: [ '-u' ],
             scriptPath: '../api',
             args: [ 'counterfactual', req.query.class_true, req.query.class_false ]

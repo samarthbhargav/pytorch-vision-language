@@ -24,7 +24,7 @@ class CubDataset(CocoDataset):
     """CUB Custom Dataset compatible with torch.utils.data.DataLoader."""
 
     dataset_prefix = 'cub'
-    image_path = ''
+    image_path = 'CUB_200_2011/images/'
     image_features_path = 'CUB_feature_dict.p'
     caption_path = 'descriptions_bird.{}.fg.json'
     #caption_train_path = 'descriptions_bird.train_noCub.fg.json'
@@ -45,11 +45,11 @@ class CubDataset(CocoDataset):
 
         cls = self.__class__
         self.img_features_path= os.path.join(self.root, cls.image_features_path)
+        self.use_image_features = use_image_features
 
         if use_image_features:
             self.load_img_features(self.img_features_path)
             self.input_size = next(iter(self.img_features.values())).shape[0]
-
 
     def load_img_features(self, img_features_path):
         with open(img_features_path, 'rb') as f:

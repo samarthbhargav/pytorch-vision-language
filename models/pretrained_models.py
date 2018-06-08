@@ -77,7 +77,7 @@ class PretrainedModel(nn.Module):
         self.output_size = self._get_output_size()
 
     def _get_output_size(self):
-        dummy_input = Variable(torch.rand(1, *self.input_size))
+        dummy_input = torch.rand(1, *self.input_size)
         output = self(dummy_input)
         output_size = output.data.view(-1).size(0)
         return output_size

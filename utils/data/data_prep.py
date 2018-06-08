@@ -21,11 +21,13 @@ class DataPreparation:
     def get_dataset(self, split='train', vision_model=None, vocab=None,
             tokens=None):
         transform = get_transform(vision_model, split)
+        use_image_features = vision_model is None
         dataset = self.DatasetClass(root=self.data_path,
                                     split=split,
                                     vocab=vocab,
                                     tokenized_captions=tokens,
-                                    transform=transform)
+                                    transform=transform,
+                                    use_image_features=use_image_features)
         self.dataset = dataset
         return self.dataset
 

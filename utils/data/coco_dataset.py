@@ -146,7 +146,7 @@ class CocoDataset(data.Dataset):
 
 
     def get_image(self, img_id):
-        path = self.coco.loadImgs(img_id)[0]['file_name']
+        path = self.coco.loadImgs([img_id])[0]['file_name']
         image = Image.open(os.path.join(self.image_path, path)).convert('RGB')
         if self.transform is not None:
             image = self.transform(image)

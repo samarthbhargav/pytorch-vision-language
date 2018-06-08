@@ -50,6 +50,8 @@ class CubDataset(CocoDataset):
         if use_image_features:
             self.load_img_features(self.img_features_path)
             self.input_size = next(iter(self.img_features.values())).shape[0]
+        else:
+            self.img_features = None
 
     def load_img_features(self, img_features_path):
         with open(img_features_path, 'rb') as f:

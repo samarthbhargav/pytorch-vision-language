@@ -6,7 +6,7 @@ import torch
 import torchvision.transforms as transforms
 
 # Local packages
-# from .coco_dataset import CocoDataset
+from .coco_dataset import CocoDataset
 from .cub_dataset import CubDataset
 from utils.transform import get_transform
 

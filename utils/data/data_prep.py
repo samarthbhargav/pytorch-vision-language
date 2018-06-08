@@ -13,7 +13,7 @@ from utils.transform import get_transform
 class DataPreparation:
     def __init__(self, dataset_name='coco', data_path='./data'):
         if dataset_name == 'coco':
-            self.DatasetClass = CubDataset#CocoDataset
+            self.DatasetClass = CocoDataset
         elif dataset_name == 'cub':
             self.DatasetClass = CubDataset
         self.data_path = os.path.join(data_path, self.DatasetClass.dataset_prefix)

@@ -14,7 +14,7 @@ from train import lrcn_trainer
 args = Namespace(pretrained_model = 'vgg16', embedding_size=1000, hidden_size=1000, layers_to_truncate=1,
                  factored=True, cuda=False, model="lrcn", dataset = "cub", train = False, data_path= "./data",
                  batch_size = 20, num_workers = 1, learning_rate=0.1, num_epochs=3, log_step=1,
-                 weights_ckpt='/home/christina/Desktop/Project AI/pytorch-vision-language/gve-cub-D2018-06-04-T14-35-50-G0/ckpt-e3.pth')
+                 weights_ckpt='./checkpoints/gve-cub-D2018-06-04-T14-35-50-G0/ckpt-e3.pth')
 
 # Parse arguments
 #args = utils.arg_parser.get_args()
@@ -65,7 +65,7 @@ def get_image_tensor(path):
     return image  # assumes that you're using GPU
 
 
-tensor = get_image_tensor('/home/christina/Desktop/Project AI/pytorch-vision-language/data/cub/images/001.Black_footed_Albatross/Black_Footed_Albatross_0001_796111.jpg')
+tensor = get_image_tensor('./data/cub/images/001.Black_footed_Albatross/Black_Footed_Albatross_0001_796111.jpg')
 
 print(tensor.size())
 

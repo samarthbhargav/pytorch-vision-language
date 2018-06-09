@@ -57,7 +57,7 @@ if __name__ == '__main__':
     # TODO: Remove and handle with checkpoints
     if not args.train:
         print("Loading Model Weights ...")
-        evaluation_state_dict = torch.load(args.eval_ckpt)
+        evaluation_state_dict = torch.load(args.eval_ckpt, map_location='cpu')
         model_dict = model.state_dict(full_dict=True)
         model_dict.update(evaluation_state_dict)
         model.load_state_dict(model_dict)
@@ -98,9 +98,9 @@ if __name__ == '__main__':
             model.eval()
             result = evaluator.train_epoch()
             if evaluator.REQ_EVAL:
-                score = 0 #val_dataset.eval(result, checkpoint_path)
+                score = val_dataset.eval(result, checkpoint_path)
             else:
-                score = 0 #result
+                score = result
             model.train()
 
             logger.scalar_summary('score', score, trainer.curr_epoch)
@@ -133,4 +133,3 @@ if __name__ == '__main__':
     if not args.train and args.model == 'sc':
         with open('results.json', 'w') as f:
             json.dump(result, f)
-

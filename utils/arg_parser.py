@@ -32,7 +32,7 @@ def get_args():
                         choices=['lrcn', 'gve', 'sc'])
     parser.add_argument('--dataset', type=str, default='coco',
                         choices=['coco', 'cub'])
-    parser.add_argument('--pretrained-model', type=str, default='vgg16',
+    parser.add_argument('--pretrained-model', type=str, #default='vgg16',
                         help="[LRCN] name of pretrained model for image features",
                         choices=PretrainedModel.SUPPORTED_MODEL_NAMES)
     parser.add_argument('--layers-to-truncate', type=int, default=1,

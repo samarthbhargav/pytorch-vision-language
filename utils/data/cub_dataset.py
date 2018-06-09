@@ -24,7 +24,7 @@ class CubDataset(CocoDataset):
     """CUB Custom Dataset compatible with torch.utils.data.DataLoader."""
 
     dataset_prefix = 'cub'
-    image_path = 'CUB_200_2011/images/'
+    image_path = 'images/'
     image_features_path = 'CUB_feature_dict.p'
     caption_path = 'descriptions_bird.{}.fg.json'
     #caption_train_path = 'descriptions_bird.train_noCub.fg.json'

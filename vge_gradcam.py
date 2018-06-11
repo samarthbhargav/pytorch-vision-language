@@ -52,19 +52,32 @@ trainer = trainer_creator(args, model, dataset, data_loader, logger=None, device
 # Given an image id, retrieve image and label
 # (assuming the image exists in the corresponding dataset!)
 images_path = 'data/cub/images/'
-img_id = '121.Grasshopper_Sparrow/Grasshopper_Sparrow_0078_116052.jpg'
-raw_image = Image.open(os.path.join(images_path, img_id))
-image_input = dataset.get_image(img_id).unsqueeze(dim=0)
-label = dataset.get_class_label(img_id)
+img_ids = ('200.Common_Yellowthroat/Common_Yellowthroat_0040_190427.jpg',
+    '046.Gadwall/Gadwall_0024_30942.jpg',
+    '123.Henslow_Sparrow/Henslow_Sparrow_0010_796600.jpg',
+    '191.Red_headed_Woodpecker/Red_Headed_Woodpecker_0039_183446.jpg',
+    '044.Frigatebird/Frigatebird_0023_43110.jpg',
+    '012.Yellow_headed_Blackbird/Yellow_Headed_Blackbird_0062_8310.jpg',
+    '002.Laysan_Albatross/Laysan_Albatross_0005_565.jpg',
+    '104.American_Pipit/American_Pipit_0121_100040.jpg',
+    '122.Harris_Sparrow/Harris_Sparrow_0074_116539.jpg',
+    '087.Mallard/Mallard_0044_76317.jpg',
+    '135.Bank_Swallow/Bank_Swallow_0031_129507.jpg')
 
-# Generate explanation (skip EOS)
-outputs = model.generate_sentence(image_input, trainer.start_word, trainer.end_word, label)[:-1]
-explanation = ' '.join([dataset.vocab.get_word_from_idx(idx.item()) for idx in outputs])
+for img_id in img_ids:
+    raw_image = Image.open(os.path.join(images_path, img_id))
+    image_input = dataset.get_image(img_id).unsqueeze(dim=0)
+    label = dataset.get_class_label(img_id)
 
-# Plot results
-plt.imshow(raw_image)
-plt.title(explanation)
-plt.axis('off')
-plt.show()
+    # Generate explanation (skip EOS)
+    outputs = model.generate_sentence(image_input, trainer.start_word, trainer.end_word, label)[:-1]
+    explanation = ' '.join([dataset.vocab.get_word_from_idx(idx.item()) for idx in outputs])
+
+    # Plot results
+    plt.figure(figsize=(15,15))
+    plt.imshow(raw_image)
+    plt.title(explanation)
+    plt.axis('off')
+    plt.show()
 
 

@@ -29,7 +29,7 @@ def get_args():
     # Model parameters
     parser.add_argument('--model', type=str, default='lrcn',
                         help="deep learning model",
-                        choices=['lrcn', 'gve', 'sc'])
+                        choices=['lrcn', 'gve', 'sc', 'ic'])
     parser.add_argument('--dataset', type=str, default='coco',
                         choices=['coco', 'cub'])
     parser.add_argument('--pretrained-model', type=str, #default='vgg16',

@@ -7,7 +7,7 @@ import random
 
 class DataApi:
     # TODO figure out how to do this for test images
-    def __init__(self, location="../data/cub/"):        
+    def __init__(self, location="data/cub/"):        
         self.description_test = self.get_descriptions(os.path.join(location, "descriptions_bird.train.fg.json"))
         self.data = []
         self.classes = defaultdict(list)

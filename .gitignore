@@ -1,9 +1,12 @@
+.vscode
+
 # Project-related
 checkpoints
 /data/
 pycocotools/
 pycocoevalcap/
-
+results-*
+utils/tokenizer/
 # PYTHON
 # Byte-compiled / optimized / DLL files
 __pycache__/

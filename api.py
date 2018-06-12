@@ -46,7 +46,9 @@ class CounterFactualResource(Resource):
         image["cf_explanation"] = cf_explanation_model.generate_counterfactual_explanation(image)
         image["explanation"] = explanation_model.generate_explanation(image)
 
-        path = os.path.join(*image["path"].split("/")[2:])
+        #print(image["path"])
+        path = os.path.join(*image["path"].split("/")[1:])
+        #print(path)
         del image["path"]
         image["url"] = url_for('static', filename=path)
 

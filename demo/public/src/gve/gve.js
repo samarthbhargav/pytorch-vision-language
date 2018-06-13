@@ -1,11 +1,12 @@
 angular.module('gveApp', [])
     .controller('MainCtrl', ['$scope', '$http', function ($scope, $http) {
         $scope.loading = true;
+        $scope.server = "http://localhost:5000";
 
         $scope.load_classes = function () {
             $scope.classes = [];
-            $http.get('/api/classes').then(function (response) {
-                $scope.classes = response.data.message;
+            $http.get($scope.server + '/classes').then(function (response) {
+                $scope.classes = response.data;
                 $scope.retry();
             });
         };
@@ -21,15 +22,10 @@ angular.module('gveApp', [])
             var classes = angular.copy($scope.classes);
             classes.splice(index, 1);
             var class2 = classes[Math.floor(Math.random() * classes.length)];
-            $http.get('/api/counterfactual', {
-                params: {
-                    class_true: class1,
-                    class_false: class2
-                }
-            }).then(function (response) {
-                $scope.explanation = response.data.message.images[0].explanation;
-                $scope.correct_class_label = response.data.message.images[0].class_label;
-                $scope.images = shuffle(response.data.message.images);
+            $http.get($scope.server + '/counter_factual' + '/' + class1 + '/' + class2).then(function (response) {
+                $scope.explanation = response.data.images[0].explanation;
+                $scope.correct_class_label = response.data.images[0].class_label;
+                $scope.images = shuffle(response.data.images);
                 $scope.loading = false;
                 $scope.answered = false;
                 $scope.result = false;

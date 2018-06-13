@@ -2,7 +2,7 @@ angular.module('gveApp', [])
     .filter("trust", ['$sce', function($sce) {
         return function(htmlCode){
             return $sce.trustAsHtml(htmlCode);
-        }
+        };
     }])
     .controller('MainCtrl', ['$scope', '$http', function ($scope, $http) {
         $scope.loading_fact_explainer = false;

@@ -68,7 +68,7 @@ class PretrainedModel(nn.Module):
 
         # Freeze all parameters of pretrained model
         for param in self.pretrained_model.parameters():
-                param.requires_grad = False
+                param.requires_grad = True
 
         # Switch model to eval mode (affects Dropout & BatchNorm)
         self.pretrained_model.eval()

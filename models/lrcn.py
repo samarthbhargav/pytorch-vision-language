@@ -102,6 +102,7 @@ class LRCN(nn.Module):
         image_features = F.relu(image_features)
         image_features = feat_func(image_features)
         image_features = image_features.unsqueeze(1)
+        print('Sum of features: {:.3f}'.format(torch.sum(image_features)))
 
         embedded_word = self.word_embed(start_word)
         embedded_word = embedded_word.expand(image_features.size(0), -1, -1)

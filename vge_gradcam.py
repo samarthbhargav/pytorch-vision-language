@@ -1,5 +1,6 @@
 import utils.arg_parser
 import torch
+import torch.nn.functional as F
 from models.model_loader import ModelLoader
 from train.trainer_loader import TrainerLoader
 from utils.data.data_prep import DataPreparation
@@ -45,6 +46,26 @@ model.load_state_dict(model_dict)
 # Disable dropout and batch normalization
 model.eval()
 
+# Get a reference to the last convolutional layer in the VGG
+layer = model.vision_model.pretrained_model.features._modules['28']
+feature_map = torch.zeros((512, 14, 14), requires_grad=True)
+
+# Define what to do when calling forward
+def get_feature_map(module, input, output):
+    feature_map.requires_grad = False
+    feature_map.copy_(output.squeeze(dim=0).data)
+    feature_map.requires_grad = True
+layer.register_forward_hook(get_feature_map)
+
+# Define what to do when calling backward
+def process_fmap_grad(fmap_grad):
+    print('called process_fmap_grad')
+    # Compute global average
+    a_k = fmap_grad.mean(dim=-1).mean(dim=-1)
+    grad_cam = F.relu(torch.sum(a_k[:, None, None] * fmap_grad, dim=0)).data.numpy()
+feature_map.register_hook(process_fmap_grad)
+
+
 # The trainer already provides a method to extract an explanation
 trainer_creator = getattr(TrainerLoader, args.model)
 trainer = trainer_creator(args, model, dataset, data_loader, logger=None, device=device)
@@ -52,22 +73,22 @@ trainer = trainer_creator(args, model, dataset, data_loader, logger=None, device
 # Given an image id, retrieve image and label
 # (assuming the image exists in the corresponding dataset!)
 images_path = 'data/cub/images/'
-img_ids = ('165.Chestnut_sided_Warbler/Chestnut_Sided_Warbler_0016_164060.jpg',
-    '041.Scissor_tailed_Flycatcher/Scissor_Tailed_Flycatcher_0023_42117.jpg',
-    '151.Black_capped_Vireo/Black_Capped_Vireo_0043_797458.jpg',
-    '155.Warbling_Vireo/Warbling_Vireo_0030_158488.jpg',
-    '008.Rhinoceros_Auklet/Rhinoceros_Auklet_0030_797509.jpg',
-    '079.Belted_Kingfisher/Belted_Kingfisher_0105_70550.jpg',
-    '089.Hooded_Merganser/Hooded_Merganser_0049_79136.jpg',
-    '064.Ring_billed_Gull/Ring_Billed_Gull_0074_52258.jpg',
-    '098.Scott_Oriole/Scott_Oriole_0016_92398.jpg',
-    '013.Bobolink/Bobolink_0053_10166.jpg',
-    '003.Sooty_Albatross/Sooty_Albatross_0040_796375.jpg',
-    '026.Bronzed_Cowbird/Bronzed_Cowbird_0086_796259.jpg',
-    '092.Nighthawk/Nighthawk_0018_83639.jpg',
-    '035.Purple_Finch/Purple_Finch_0025_28174.jpg',
-    '037.Acadian_Flycatcher/Acadian_Flycatcher_0045_795587.jpg',
-    '066.Western_Gull/Western_Gull_0028_55680.jpg')
+img_ids = ('165.Chestnut_sided_Warbler/Chestnut_Sided_Warbler_0016_164060.jpg',)
+    # '041.Scissor_tailed_Flycatcher/Scissor_Tailed_Flycatcher_0023_42117.jpg',
+    # '151.Black_capped_Vireo/Black_Capped_Vireo_0043_797458.jpg',
+    # '155.Warbling_Vireo/Warbling_Vireo_0030_158488.jpg',
+    # '008.Rhinoceros_Auklet/Rhinoceros_Auklet_0030_797509.jpg',
+    # '079.Belted_Kingfisher/Belted_Kingfisher_0105_70550.jpg',
+    # '089.Hooded_Merganser/Hooded_Merganser_0049_79136.jpg',
+    # '064.Ring_billed_Gull/Ring_Billed_Gull_0074_52258.jpg',
+    # '098.Scott_Oriole/Scott_Oriole_0016_92398.jpg',
+    # '013.Bobolink/Bobolink_0053_10166.jpg',
+    # '003.Sooty_Albatross/Sooty_Albatross_0040_796375.jpg',
+    # '026.Bronzed_Cowbird/Bronzed_Cowbird_0086_796259.jpg',
+    # '092.Nighthawk/Nighthawk_0018_83639.jpg',
+    # '035.Purple_Finch/Purple_Finch_0025_28174.jpg',
+    # '037.Acadian_Flycatcher/Acadian_Flycatcher_0045_795587.jpg',
+    # '066.Western_Gull/Western_Gull_0028_55680.jpg')
 
 for img_id in img_ids:
     raw_image = Image.open(os.path.join(images_path, img_id))
@@ -75,14 +96,16 @@ for img_id in img_ids:
     label = dataset.get_class_label(img_id)
 
     # Generate explanation (skip EOS)
-    outputs = model.generate_sentence(image_input, trainer.start_word, trainer.end_word, label)[:-1]
+    outputs, log_probs = model.generate_sentence(image_input, trainer.start_word, trainer.end_word, label)
     explanation = ' '.join([dataset.vocab.get_word_from_idx(idx.item()) for idx in outputs])
 
+    log_probs[0].backward()
     # Plot results
-    plt.figure(figsize=(15,15))
-    plt.imshow(raw_image)
-    plt.title(explanation)
-    plt.axis('off')
-    plt.show()
+    # plt.figure(figsize=(15,15))
+    # plt.imshow(raw_image)
+    # plt.title(explanation)
+    # plt.axis('off')
+    # plt.show()
+
 
 

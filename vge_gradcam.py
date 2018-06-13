@@ -22,7 +22,6 @@ args.batch_size = 1
 # set to train because we need gradients for Grad-CAM
 args.train = True
 args.eval_ckpt = 'data/vgg-vge-best-ckpt.pth'
-#args.eval_ckpt = 'data/vge-best-ckpt.pth'
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -46,25 +45,28 @@ model.load_state_dict(model_dict)
 # Disable dropout and batch normalization
 model.eval()
 
-# Get a reference to the last convolutional layer in the VGG
-layer = model.vision_model.pretrained_model.features._modules['28']
-feature_map = torch.zeros((512, 14, 14), requires_grad=True)
+# The model actually has a vision model but we need to
+# probe the feature extraction process
+model.has_vision_model = False
+vgg_feat_layers = model.vision_model.pretrained_model.features
+vgg_class_layers = model.vision_model.pretrained_model.classifier
 
-# Define what to do when calling forward
-def get_feature_map(module, input, output):
-    feature_map.requires_grad = False
-    feature_map.copy_(output.squeeze(dim=0).data)
-    feature_map.requires_grad = True
-layer.register_forward_hook(get_feature_map)
+def get_fmap_features(image_input):
+    # Forward pass until layer 28
+    for i in range(29):
+        image_input = vgg_feat_layers[i](image_input)
+    fmap = image_input
+    # TODO: register backward hook
 
-# Define what to do when calling backward
-def process_fmap_grad(fmap_grad):
-    print('called process_fmap_grad')
-    # Compute global average
-    a_k = fmap_grad.mean(dim=-1).mean(dim=-1)
-    grad_cam = F.relu(torch.sum(a_k[:, None, None] * fmap_grad, dim=0)).data.numpy()
-feature_map.register_hook(process_fmap_grad)
+    # Finish forward pass
+    features = fmap
+    for i in range(29, len(vgg_feat_layers)):
+        features = vgg_feat_layers[i](features)
+    features = features.view(features.size(0), -1)
+    for layer in vgg_class_layers:
+        features = layer(features)
 
+    return fmap, features
 
 # The trainer already provides a method to extract an explanation
 trainer_creator = getattr(TrainerLoader, args.model)
@@ -95,17 +97,18 @@ for img_id in img_ids:
     image_input = dataset.get_image(img_id).unsqueeze(dim=0)
     label = dataset.get_class_label(img_id)
 
-    # Generate explanation (skip EOS)
-    outputs, log_probs = model.generate_sentence(image_input, trainer.start_word, trainer.end_word, label)
+    # Get feature maps from the conv layer, and final features
+    fmap, features = get_fmap_features(image_input)
+    # Generate explanation
+    outputs, log_probs = model.generate_sentence(features, trainer.start_word, trainer.end_word, label)
     explanation = ' '.join([dataset.vocab.get_word_from_idx(idx.item()) for idx in outputs])
 
-    log_probs[0].backward()
     # Plot results
-    # plt.figure(figsize=(15,15))
-    # plt.imshow(raw_image)
-    # plt.title(explanation)
-    # plt.axis('off')
-    # plt.show()
+    plt.figure(figsize=(15,15))
+    plt.imshow(raw_image)
+    plt.title(explanation)
+    plt.axis('off')
+    plt.show()
 
 
 

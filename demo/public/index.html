@@ -56,7 +56,7 @@
                                         <div class="sample_image_conatiner">
                                             <div class="demo-card-image mdl-card mdl-shadow--2dp image_card" ng-class="{ 'current': $index == current }" ng-repeat="image in sample_images" ng-click="explain($index)">
                                                 <div class="mdl-card__title mdl-card--expand">
-                                                    <img ng-src="http://localhost:5000/{{image.path}}" height=100 width=150 alt="">
+                                                    <img ng-src="{{server}}/{{image.path}}" height=100 width=150 alt="">
                                                 </div>
                                             </div>
                                         </div>
@@ -89,7 +89,7 @@
                                         </div>
                                         <div class="demo-card-image mdl-card mdl-shadow--2dp image_card" ng-repeat="image in images" ng-click="select(image)">
                                             <div class="mdl-card__title mdl-card--expand">
-                                                <img ng-src="http://localhost:5000{{image.url}}" height=250 width=300 alt="">
+                                                <img ng-src="{{server}}{{image.url}}" height=250 width=300 alt="">
                                             </div>
                                             <div class="mdl-card__actions mdl-card--border">
                                                 <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect card_action">Select</a>
@@ -105,7 +105,7 @@
                                         </div>
                                         <div class="demo-card-image mdl-card mdl-shadow--2dp image_card" ng-repeat="image in images">
                                             <div class="mdl-card__title mdl-card--expand">
-                                                <img ng-src="http://localhost:5000{{image.url}}" height=250 width=300 alt="">
+                                                <img ng-src="{{server}}{{image.url}}" height=250 width=300 alt="">
                                             </div>
                                             <div class="mdl-card__supporting-text" ng-bind-html="displayExplanation(image) | trust"></div>
                                             <div class="mdl-card__actions mdl-card--border reveal_actions">

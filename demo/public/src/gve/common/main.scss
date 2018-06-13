@@ -3,6 +3,14 @@
 
 /* THEME START */
 
+.mdl-layout__tab-panel {
+    min-height: 600px;
+}
+
+.class_label {
+    color: #ff7a00;
+}
+
 .sam-text {
     height: 72px;
 }
@@ -143,6 +151,7 @@ img.article-image {
 .demo-page {
     padding: 20px;
 
+    .factual,
     .counterfactual {
         width: 100%;
 
@@ -192,7 +201,61 @@ img.article-image {
                 }
             }
         }
+    }
 
+    .factual {
+        .controls {
+            position: relative;
+
+            .refresh {
+                position: absolute;
+                top: -20px;
+                right: 30px;
+
+                .refresh-button {
+                    background: #3f51b5;
+                    color: #fff;
+
+                    .mdl-ripple {
+                        background: #fff;
+                    }
+                }
+            }
+        }
+
+        .sample_image_conatiner {
+            text-align: center;
+        }
+
+        .mdl-card {
+            display: inline-block;
+            margin: 5px;
+            height: 100px;
+            min-height: auto;
+            min-width: auto;
+            width: 150px;
+            border: 2px solid transparent;
+
+            &.explanation_card {
+                width: 100%;
+
+                h5 {
+                    margin: 0;
+                    line-height: 1.6;
+                }
+            }
+
+            &.image_card.current {
+                border-color: #ff7a00;
+            }
+
+            .mdl-card__title {
+                padding: 0;
+            }
+        }
+    }
+
+    .counterfactual {
         .mdl-card {
             &.explanation_card {
                 min-height: 0px;

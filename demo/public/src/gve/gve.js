@@ -1,7 +1,33 @@
 angular.module('gveApp', [])
+    .filter("trust", ['$sce', function($sce) {
+        return function(htmlCode){
+            return $sce.trustAsHtml(htmlCode);
+        }
+    }])
     .controller('MainCtrl', ['$scope', '$http', function ($scope, $http) {
-        $scope.loading = true;
+        $scope.loading_fact_explainer = false;
+        $scope.loading_counterfact_explainer = true;
         $scope.server = "http://localhost:5000";
+
+        $scope.displayExplanation = function (image) {
+            return "This is a <span class='class_label'>" + image.class_label.split("_").join(" ") + "</span> because " + image.explanation;
+        };
+
+        $scope.explain = function (image_index) {
+            $scope.current = image_index;
+            $scope.sample_explanation = "Loading...";
+            $http.get($scope.server + '/explain/' + $scope.sample_images[$scope.current].id).then(function (response) {
+                $scope.sample_explanation = $scope.displayExplanation(response.data);
+            });
+        };
+
+        $scope.load_sample_images = function () {
+            $scope.sample_images = [];
+            $http.get($scope.server + '/sample_images/10').then(function (response) {
+                $scope.sample_images = response.data;
+                $scope.explain(0);
+            });
+        };
 
         $scope.load_classes = function () {
             $scope.classes = [];
@@ -12,7 +38,7 @@ angular.module('gveApp', [])
         };
 
         $scope.retry = function () {
-            $scope.loading = true;
+            $scope.loading_counterfact_explainer = true;
             $scope.explanation = "";
             $scope.images = [];
             $scope.correct_class_label = "";
@@ -26,12 +52,13 @@ angular.module('gveApp', [])
                 $scope.explanation = response.data.images[0].explanation;
                 $scope.correct_class_label = response.data.images[0].class_label;
                 $scope.images = shuffle(response.data.images);
-                $scope.loading = false;
+                $scope.loading_counterfact_explainer = false;
                 $scope.answered = false;
                 $scope.result = false;
             });
         };
 
+        $scope.load_sample_images();
         $scope.load_classes();
 
         function shuffle(array) {

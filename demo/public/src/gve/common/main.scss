@@ -3,12 +3,34 @@
 
 /* THEME START */
 
+.overlay {
+    position: absolute;
+    opacity: 0.5;
+}
+
 .mdl-layout__tab-panel {
     min-height: 600px;
 }
 
 .class_label {
     color: #ff7a00;
+}
+
+.anchor {
+    cursor: pointer;
+
+    &.anchor1 {
+        color: #7FDBFF;
+    }
+    &.anchor2 {
+        color: #85144b;
+    }
+    &.anchor3 {
+        color: #2ECC40;
+    }
+    &.anchor4 {
+        color: #B10DC9;
+    }
 }
 
 .sam-text {

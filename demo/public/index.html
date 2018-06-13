@@ -64,7 +64,7 @@
                                     <div class="explanation_container">
                                         <div class="mdl-card mdl-shadow--2dp explanation_card">
                                             <div class="mdl-card__supporting-text">
-                                                <h5 ng-bind-html="sample_explanation | trust"></h5>
+                                                <h5 compile="sample_explanation"></h5>
                                             </div>
                                         </div>
                                     </div>
@@ -106,8 +106,9 @@
                                         <div class="demo-card-image mdl-card mdl-shadow--2dp image_card" ng-repeat="image in images">
                                             <div class="mdl-card__title mdl-card--expand">
                                                 <img ng-src="{{server}}{{image.url}}" height=250 width=300 alt="">
+                                                <img class="overlay" ng-show="overlayTracker[$parent.$index] == $index + 1" ng-src="{{overlay}}" height=250 width=300 alt="" ng-repeat="overlay in image.overlays">
                                             </div>
-                                            <div class="mdl-card__supporting-text" ng-bind-html="displayExplanation(image) | trust"></div>
+                                            <div class="mdl-card__supporting-text" compile="addOverlayAnchors(displayExplanation(image)).display"></div>
                                             <div class="mdl-card__actions mdl-card--border reveal_actions">
                                                 <label class="reveal_label correct_label" ng-show="correct_class_label == image.class_label">CORRECT</label>
                                                 <label class="reveal_label incorrect_label" ng-show="correct_class_label != image.class_label">INCORRECT</label>

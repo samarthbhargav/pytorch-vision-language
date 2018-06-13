@@ -1,9 +1,10 @@
 {
-  "name": "sandbox",
+  "name": "gve",
   "version": "1.0.0",
-  "description": "gulfaraz's playground",
+  "description": "Generating Visual Explanations",
   "main": "gulpfile.js",
   "scripts": {
+    "start": "ENVIRONMENT='development' gulp",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Gulfaraz Yasin",

@@ -15,13 +15,13 @@ args = utils.arg_parser.get_args()
 # Overwrite required args
 args.model = 'gve'
 args.dataset = 'cub'
-#args.pretrained_model = 'vgg16'
+args.pretrained_model = 'vgg16'
 args.num_epochs = 1
 args.batch_size = 1
 # set to train because we need gradients for Grad-CAM
 args.train = True
-#args.eval_ckpt = 'data/vgg-vge-ckpt-e20.pth'
-args.eval_ckpt = 'data/vge-best-ckpt.pth'
+args.eval_ckpt = 'data/vgg-vge-best-ckpt.pth'
+#args.eval_ckpt = 'data/vge-best-ckpt.pth'
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -52,17 +52,22 @@ trainer = trainer_creator(args, model, dataset, data_loader, logger=None, device
 # Given an image id, retrieve image and label
 # (assuming the image exists in the corresponding dataset!)
 images_path = 'data/cub/images/'
-img_ids = ('200.Common_Yellowthroat/Common_Yellowthroat_0040_190427.jpg',
-    '046.Gadwall/Gadwall_0024_30942.jpg',
-    '123.Henslow_Sparrow/Henslow_Sparrow_0010_796600.jpg',
-    '191.Red_headed_Woodpecker/Red_Headed_Woodpecker_0039_183446.jpg',
-    '044.Frigatebird/Frigatebird_0023_43110.jpg',
-    '012.Yellow_headed_Blackbird/Yellow_Headed_Blackbird_0062_8310.jpg',
-    '002.Laysan_Albatross/Laysan_Albatross_0005_565.jpg',
-    '104.American_Pipit/American_Pipit_0121_100040.jpg',
-    '122.Harris_Sparrow/Harris_Sparrow_0074_116539.jpg',
-    '087.Mallard/Mallard_0044_76317.jpg',
-    '135.Bank_Swallow/Bank_Swallow_0031_129507.jpg')
+img_ids = ('165.Chestnut_sided_Warbler/Chestnut_Sided_Warbler_0016_164060.jpg',
+    '041.Scissor_tailed_Flycatcher/Scissor_Tailed_Flycatcher_0023_42117.jpg',
+    '151.Black_capped_Vireo/Black_Capped_Vireo_0043_797458.jpg',
+    '155.Warbling_Vireo/Warbling_Vireo_0030_158488.jpg',
+    '008.Rhinoceros_Auklet/Rhinoceros_Auklet_0030_797509.jpg',
+    '079.Belted_Kingfisher/Belted_Kingfisher_0105_70550.jpg',
+    '089.Hooded_Merganser/Hooded_Merganser_0049_79136.jpg',
+    '064.Ring_billed_Gull/Ring_Billed_Gull_0074_52258.jpg',
+    '098.Scott_Oriole/Scott_Oriole_0016_92398.jpg',
+    '013.Bobolink/Bobolink_0053_10166.jpg',
+    '003.Sooty_Albatross/Sooty_Albatross_0040_796375.jpg',
+    '026.Bronzed_Cowbird/Bronzed_Cowbird_0086_796259.jpg',
+    '092.Nighthawk/Nighthawk_0018_83639.jpg',
+    '035.Purple_Finch/Purple_Finch_0025_28174.jpg',
+    '037.Acadian_Flycatcher/Acadian_Flycatcher_0045_795587.jpg',
+    '066.Western_Gull/Western_Gull_0028_55680.jpg')
 
 for img_id in img_ids:
     raw_image = Image.open(os.path.join(images_path, img_id))

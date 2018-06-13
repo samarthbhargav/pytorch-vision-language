@@ -33,8 +33,17 @@ class DataApi:
             })
 
             assert os.path.exists(self.data[-1]["path"])
-        
-        
+    
+    def sample_images(self, n):
+        images = []
+        for _ in range(n):
+            images.append(random.choice(self.data).copy())
+        return images
+
+    def get_image(self, image_id):
+        img = next((img for img in self.data if img["id"] == image_id), None)
+        # Return a copy 
+        return img.copy()
 
     def get_descriptions(self, path):
         with codecs.open(path, "r", "utf-8") as reader:
@@ -45,4 +54,5 @@ class DataApi:
 
     def sample_class(self, klass):
         idx = random.choice(self.classes[klass])
-        return self.data[idx]
+        return self.data[idx].copy()
+    

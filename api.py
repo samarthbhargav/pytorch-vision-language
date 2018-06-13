@@ -27,6 +27,17 @@ class AvailableClassesResource(Resource):
     def get(self):
         return data_api.get_classes()
 
+class ExplanationResource(Resource):
+    def get(self, image_id1, image_id2):
+        image_id = "{}/{}".format(image_id1, image_id2)
+        image = data_api.get_image(image_id)
+        image["explanation"] = explanation_model.generate_explanation(image)
+        return image
+
+class SampleImagesResource(Resource):
+    def get(self, n):
+        return data_api.sample_images(n)
+
 class CounterFactualResource(Resource):
     def get(self, class_true, class_false):
         true_image = data_api.sample_class(class_true)
@@ -53,6 +64,8 @@ class CounterFactualResource(Resource):
         image["url"] = url_for('static', filename=path)
 
 api.add_resource(AvailableClassesResource, '/classes')
+api.add_resource(SampleImagesResource, '/sample_images/<int:n>')
+api.add_resource(ExplanationResource, '/explain/<string:image_id1>/<string:image_id2>')
 api.add_resource(CounterFactualResource, '/counter_factual/<string:class_true>/<string:class_false>')
 
 if __name__ == '__main__':    

@@ -99,7 +99,7 @@ class LRCNTrainer:
         # TODO: max_sampling_length
         vocab = self.dataset.vocab
         generated_captions = []
-        outputs = self.model.generate_sentence(image_input, self.start_word, self.end_word, *args)
+        outputs, _ = self.model.generate_sentence(image_input, self.start_word, self.end_word, *args)
         if outputs.dim() == 1:
             outputs = outputs.unsqueeze(0)
         for out_idx in range(len(outputs)):

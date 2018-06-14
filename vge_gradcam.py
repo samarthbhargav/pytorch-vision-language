@@ -55,7 +55,7 @@ grad_cam = np.zeros((14, 14))
 
 # Grad-CAM
 def process_fmap_grad(grad):
-    print('Gradient has shape', grad.shape)
+    print('Called hook! Gradient has shape', grad.shape)
     # Extract single feature map gradient from batch
     fmap_grad = grad[0]
     # and compute global average
@@ -112,10 +112,14 @@ for img_id in img_ids:
 
     # Get feature maps from the conv layer, and final features
     features = get_vgg_features(image_input)
-    #image_input.retain_grad()
+    features.retain_grad()
     # Generate explanation
     outputs, log_probs = model.generate_sentence(features, trainer.start_word, trainer.end_word, label)
     explanation = ' '.join([dataset.vocab.get_word_from_idx(idx.item()) for idx in outputs][:-1])
+
+    log_probs[0].backward()
+    print('features.grad:\n', features.grad)
+    print('image_input.grad:\n', image_input.grad)
 
     # Plot results
     #plt.figure(figsize=(15, 15))
@@ -138,5 +142,3 @@ for img_id in img_ids:
     #     plt.title(dataset.vocab.get_word_from_idx(outputs[i].item()))
     #     plt.axis('off')
     #     plt.show()
-
-

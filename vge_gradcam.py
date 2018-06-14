@@ -10,6 +10,7 @@ from PIL import Image
 import matplotlib.pyplot as plt
 import os
 import numpy as np
+from scipy.interpolate import interp2d
 
 # Get default arguments
 args = utils.arg_parser.get_args()
@@ -29,6 +30,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # Data preparation
 print("Preparing Data ...")
 split = get_split_str(args.train, bool(args.eval_ckpt), args.dataset)
+split = 'test'
 data_prep = DataPreparation(args.dataset, args.data_path)
 dataset, data_loader = data_prep.get_dataset_and_loader(split, args.pretrained_model,
         batch_size=args.batch_size, num_workers=args.num_workers)
@@ -51,7 +53,7 @@ model.has_vision_model = False
 vgg_feat_layers = model.vision_model.pretrained_model.features
 vgg_class_layers = model.vision_model.pretrained_model.classifier
 
-grad_cam = np.zeros((14, 14))
+visual = np.zeros((224, 224))
 
 # Grad-CAM
 def process_fmap_grad(grad):
@@ -60,7 +62,15 @@ def process_fmap_grad(grad):
     fmap_grad = grad[0]
     # and compute global average
     a_k = fmap_grad.mean(dim=-1).mean(dim=-1)
-    grad_cam[:] = F.relu(torch.sum(a_k[:, None, None] * fmap_grad, dim=0)).data.numpy()
+    grad_cam = F.relu(torch.sum(a_k[:, None, None] * fmap_grad, dim=0)).data.numpy()
+
+    nx, ny = grad_cam.shape
+    x = np.linspace(0, 224, nx, endpoint=False)
+    y = np.linspace(0, 224, ny, endpoint=False)
+    f = interp2d(x, y, grad_cam)
+    xx = np.linspace(0, 224, 224, endpoint=False)
+    yy = np.linspace(0, 224, 224, endpoint=False)
+    visual[:] = f(xx, yy)
 
     print('Done')
 
@@ -87,7 +97,7 @@ trainer = trainer_creator(args, model, dataset, data_loader, logger=None, device
 # Given an image id, retrieve image and label
 # (assuming the image exists in the corresponding dataset!)
 images_path = 'data/cub/images/'
-img_ids = ('165.Chestnut_sided_Warbler/Chestnut_Sided_Warbler_0016_164060.jpg',)
+img_ids = ('100.Brown_Pelican/Brown_Pelican_0122_94022.jpg',)
     # '041.Scissor_tailed_Flycatcher/Scissor_Tailed_Flycatcher_0023_42117.jpg',
     # '151.Black_capped_Vireo/Black_Capped_Vireo_0043_797458.jpg',
     # '155.Warbling_Vireo/Warbling_Vireo_0030_158488.jpg',
@@ -117,28 +127,30 @@ for img_id in img_ids:
     outputs, log_probs = model.generate_sentence(features, trainer.start_word, trainer.end_word, label)
     explanation = ' '.join([dataset.vocab.get_word_from_idx(idx.item()) for idx in outputs][:-1])
 
-    log_probs[0].backward()
-    print('features.grad:\n', features.grad)
-    print('image_input.grad:\n', image_input.grad)
+    #log_probs[0].backward()
+    #print('features.grad:\n', features.grad)
+    #print('features.grad.sum():\n', features.grad.sum())
+    #print('image_input.grad:\n', image_input.grad)
+    #print('image_input.grad.sum():\n', image_input.grad.sum())
 
     # Plot results
-    #plt.figure(figsize=(15, 15))
-    #plt.imshow(raw_image)
-    #plt.title(explanation)
-    #plt.axis('off')
-    #plt.show()
-    # for i, log_p in enumerate(log_probs):
-    #     model.zero_grad()
-    #     log_probs[i].backward(retain_graph=True)
-    #
-    #     # Plot results
-    #     plt.figure(figsize=(15,15))
-    #     plt.subplot(1, 2, 1)
-    #     plt.imshow(raw_image)
-    #     plt.title(explanation)
-    #     plt.axis('off')
-    #     plt.subplot(1, 2, 2)
-    #     plt.imshow(grad_cam)
-    #     plt.title(dataset.vocab.get_word_from_idx(outputs[i].item()))
-    #     plt.axis('off')
-    #     plt.show()
+    plt.figure(figsize=(15, 15))
+    plt.imshow(raw_image)
+    plt.title(explanation)
+    plt.axis('off')
+    plt.show()
+    for i, log_p in enumerate(log_probs):
+        model.zero_grad()
+        log_probs[i].backward(retain_graph=True)
+
+        # Plot results
+        plt.figure(figsize=(15,15))
+        plt.subplot(1, 2, 1)
+        plt.imshow(raw_image)
+        plt.title(explanation)
+        plt.axis('off')
+        plt.subplot(1, 2, 2)
+        plt.imshow(visual)
+        plt.title(dataset.vocab.get_word_from_idx(outputs[i].item()))
+        plt.axis('off')
+        plt.show()

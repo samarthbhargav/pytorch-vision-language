@@ -52,21 +52,22 @@ trainer = trainer_creator(args, model, dataset, data_loader, logger=None, device
 # Given an image id, retrieve image and label
 # (assuming the image exists in the corresponding dataset!)
 images_path = 'data/cub/images/'
-img_ids = ('200.Common_Yellowthroat/Common_Yellowthroat_0040_190427.jpg',
-    '046.Gadwall/Gadwall_0024_30942.jpg',
-    '123.Henslow_Sparrow/Henslow_Sparrow_0010_796600.jpg',
-    '191.Red_headed_Woodpecker/Red_Headed_Woodpecker_0039_183446.jpg',
-    '044.Frigatebird/Frigatebird_0023_43110.jpg',
-    '012.Yellow_headed_Blackbird/Yellow_Headed_Blackbird_0062_8310.jpg',
-    '002.Laysan_Albatross/Laysan_Albatross_0005_565.jpg',
-    '104.American_Pipit/American_Pipit_0121_100040.jpg',
-    '122.Harris_Sparrow/Harris_Sparrow_0074_116539.jpg',
-    '087.Mallard/Mallard_0044_76317.jpg',
-    '135.Bank_Swallow/Bank_Swallow_0031_129507.jpg')
+img_ids = ('200.Common_Yellowthroat/Common_Yellowthroat_0040_190427.jpg',)
+    # '046.Gadwall/Gadwall_0024_30942.jpg',
+    # '123.Henslow_Sparrow/Henslow_Sparrow_0010_796600.jpg',
+    # '191.Red_headed_Woodpecker/Red_Headed_Woodpecker_0039_183446.jpg',
+    # '044.Frigatebird/Frigatebird_0023_43110.jpg',
+    # '012.Yellow_headed_Blackbird/Yellow_Headed_Blackbird_0062_8310.jpg',
+    # '002.Laysan_Albatross/Laysan_Albatross_0005_565.jpg',
+    # '104.American_Pipit/American_Pipit_0121_100040.jpg',
+    # '122.Harris_Sparrow/Harris_Sparrow_0074_116539.jpg',
+    # '087.Mallard/Mallard_0044_76317.jpg',
+    # '135.Bank_Swallow/Bank_Swallow_0031_129507.jpg')
 
 for img_id in img_ids:
     raw_image = Image.open(os.path.join(images_path, img_id))
     image_input = dataset.get_image(img_id).unsqueeze(dim=0)
+    image_input.requires_grad = True
     label = dataset.get_class_label(img_id)
 
     # Generate explanation (skip EOS)

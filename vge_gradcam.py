@@ -87,22 +87,22 @@ trainer = trainer_creator(args, model, dataset, data_loader, logger=None, device
 # Given an image id, retrieve image and label
 # (assuming the image exists in the corresponding dataset!)
 images_path = 'data/cub/images/'
-img_ids = ('165.Chestnut_sided_Warbler/Chestnut_Sided_Warbler_0016_164060.jpg',
-    '041.Scissor_tailed_Flycatcher/Scissor_Tailed_Flycatcher_0023_42117.jpg',
-    '151.Black_capped_Vireo/Black_Capped_Vireo_0043_797458.jpg',
-    '155.Warbling_Vireo/Warbling_Vireo_0030_158488.jpg',
-    '008.Rhinoceros_Auklet/Rhinoceros_Auklet_0030_797509.jpg',
-    '079.Belted_Kingfisher/Belted_Kingfisher_0105_70550.jpg',
-    '089.Hooded_Merganser/Hooded_Merganser_0049_79136.jpg',
-    '064.Ring_billed_Gull/Ring_Billed_Gull_0074_52258.jpg',
-    '098.Scott_Oriole/Scott_Oriole_0016_92398.jpg',
-    '013.Bobolink/Bobolink_0053_10166.jpg',
-    '003.Sooty_Albatross/Sooty_Albatross_0040_796375.jpg',
-    '026.Bronzed_Cowbird/Bronzed_Cowbird_0086_796259.jpg',
-    '092.Nighthawk/Nighthawk_0018_83639.jpg',
-    '035.Purple_Finch/Purple_Finch_0025_28174.jpg',
-    '037.Acadian_Flycatcher/Acadian_Flycatcher_0045_795587.jpg',
-    '066.Western_Gull/Western_Gull_0028_55680.jpg')
+img_ids = ('165.Chestnut_sided_Warbler/Chestnut_Sided_Warbler_0016_164060.jpg',)
+    # '041.Scissor_tailed_Flycatcher/Scissor_Tailed_Flycatcher_0023_42117.jpg',
+    # '151.Black_capped_Vireo/Black_Capped_Vireo_0043_797458.jpg',
+    # '155.Warbling_Vireo/Warbling_Vireo_0030_158488.jpg',
+    # '008.Rhinoceros_Auklet/Rhinoceros_Auklet_0030_797509.jpg',
+    # '079.Belted_Kingfisher/Belted_Kingfisher_0105_70550.jpg',
+    # '089.Hooded_Merganser/Hooded_Merganser_0049_79136.jpg',
+    # '064.Ring_billed_Gull/Ring_Billed_Gull_0074_52258.jpg',
+    # '098.Scott_Oriole/Scott_Oriole_0016_92398.jpg',
+    # '013.Bobolink/Bobolink_0053_10166.jpg',
+    # '003.Sooty_Albatross/Sooty_Albatross_0040_796375.jpg',
+    # '026.Bronzed_Cowbird/Bronzed_Cowbird_0086_796259.jpg',
+    # '092.Nighthawk/Nighthawk_0018_83639.jpg',
+    # '035.Purple_Finch/Purple_Finch_0025_28174.jpg',
+    # '037.Acadian_Flycatcher/Acadian_Flycatcher_0045_795587.jpg',
+    # '066.Western_Gull/Western_Gull_0028_55680.jpg')
 
 for img_id in img_ids:
     raw_image = Image.open(os.path.join(images_path, img_id))
@@ -112,17 +112,17 @@ for img_id in img_ids:
 
     # Get feature maps from the conv layer, and final features
     features = get_vgg_features(image_input)
-    features.retain_grad()
+    #image_input.retain_grad()
     # Generate explanation
     outputs, log_probs = model.generate_sentence(features, trainer.start_word, trainer.end_word, label)
     explanation = ' '.join([dataset.vocab.get_word_from_idx(idx.item()) for idx in outputs][:-1])
 
     # Plot results
-    plt.figure(figsize=(15, 15))
-    plt.imshow(raw_image)
-    plt.title(explanation)
-    plt.axis('off')
-    plt.show()
+    #plt.figure(figsize=(15, 15))
+    #plt.imshow(raw_image)
+    #plt.title(explanation)
+    #plt.axis('off')
+    #plt.show()
     # for i, log_p in enumerate(log_probs):
     #     model.zero_grad()
     #     log_probs[i].backward(retain_graph=True)

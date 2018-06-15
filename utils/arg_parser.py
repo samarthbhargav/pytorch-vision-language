@@ -43,6 +43,8 @@ def get_args():
                         help="[GVE] path to checkpoint for pretrained weights")
     parser.add_argument('--loss-lambda', type=float, default=0.01,
                         help="[GVE] weight factor for reinforce loss")
+    parser.add_argument('--train-mismatch', type=float, default=0,
+                        help="[GVE] weight factor for mismatch loss")
 
     parser.add_argument('--embedding-size', type=int , default=1000,
                         help='dimension of the word embedding')

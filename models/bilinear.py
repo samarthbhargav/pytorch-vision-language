@@ -32,32 +32,31 @@ class CompactBilinearPooling(nn.Module):
                   None.
     """
 
-    def __init__(self, input_dim1, input_dim2, output_dim,
+    def __init__(self, input_dim, output_dim,
                  sum_pool=True, cuda=True,
                  rand_h_1=None, rand_s_1=None, rand_h_2=None, rand_s_2=None):
         super(CompactBilinearPooling, self).__init__()
-        self.input_dim1 = input_dim1
-        self.input_dim2 = input_dim2
+        self.input_dim = input_dim
         self.output_dim = output_dim
         self.sum_pool = sum_pool
         self.device = torch.device('cuda' if torch.cuda.is_available() and cuda else 'cpu')
 
         if rand_h_1 is None:
             torch.random.manual_seed(1)
-            rand_h_1 = torch.randint(output_dim, size=(self.input_dim1,))
+            rand_h_1 = torch.randint(output_dim, size=(self.input_dim,))
         if rand_s_1 is None:
             torch.random.manual_seed(3)
-            rand_s_1 = 2 * torch.randint(2, size=(self.input_dim1,)) - 1
+            rand_s_1 = 2 * torch.randint(2, size=(self.input_dim,)) - 1
 
         self.sparse_sketch_matrix1 = self.generate_sketch_matrix(
             rand_h_1, rand_s_1, self.output_dim)
 
         if rand_h_2 is None:
             torch.random.manual_seed(5)
-            rand_h_2 = torch.randint(output_dim, size=(self.input_dim2,))
+            rand_h_2 = torch.randint(output_dim, size=(self.input_dim,))
         if rand_s_2 is None:
             torch.random.manual_seed(7)
-            rand_s_2 = 2 * torch.randint(2, size=(self.input_dim2,)) - 1
+            rand_s_2 = 2 * torch.randint(2, size=(self.input_dim,)) - 1
 
         self.sparse_sketch_matrix2 = self.generate_sketch_matrix(
             rand_h_2, rand_s_2, self.output_dim)
@@ -65,21 +64,17 @@ class CompactBilinearPooling(nn.Module):
         self.sparse_sketch_matrix1 = self.sparse_sketch_matrix1.to(self.device)
         self.sparse_sketch_matrix2 = self.sparse_sketch_matrix2.to(self.device)
 
-    def forward(self, bottom1, bottom2):
+    def forward(self, x):
         """
-        bottom1: 1st input, 4D Tensor of shape [batch_size, input_dim1, height, width].
-        bottom2: 2nd input, 4D Tensor of shape [batch_size, input_dim2, height, width].
+        x: input Tensor of shape [batch_size, input_dim1, height, width].
         """
-        assert bottom1.size(1) == self.input_dim1 and \
-            bottom2.size(1) == self.input_dim2
+        batch_size, input_dim, height, width = x.size()
+        assert input_dim == self.input_dim
 
-        batch_size, _, height, width = bottom1.size()
+        x_flat = x.permute(0, 2, 3, 1).contiguous().view(-1, self.input_dim).to(self.device)
 
-        bottom1_flat = bottom1.permute(0, 2, 3, 1).contiguous().view(-1, self.input_dim1).to(self.device)
-        bottom2_flat = bottom2.permute(0, 2, 3, 1).contiguous().view(-1, self.input_dim2).to(self.device)
-
-        sketch_1 = bottom1_flat.mm(self.sparse_sketch_matrix1)
-        sketch_2 = bottom2_flat.mm(self.sparse_sketch_matrix2)
+        sketch_1 = x_flat.mm(self.sparse_sketch_matrix1)
+        sketch_2 = x_flat.mm(self.sparse_sketch_matrix2)
 
         # Build real+imag arrays to compute FFT, with imag = 0
         sketch_1 = torch.stack((sketch_1, torch.zeros(sketch_1.shape).to(device)), dim=-1)
@@ -134,15 +129,15 @@ class CompactBilinearPooling(nn.Module):
 
     def extra_repr(self):
         return 'input_dim1={}, input_dim2={}, output_dim={}'.format(
-            self.input_dim1, self.input_dim2, self.output_dim)
+            self.input_dim, self.input_dim, self.output_dim)
 
 
 if __name__ == '__main__':
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    bottom1 = torch.randn(128, 512, 14, 14).to(device)
-    bottom2 = torch.randn(128, 512, 14, 14).to(device)
+    x = torch.randn(128, 512, 14, 14).to(device)
 
-    layer = CompactBilinearPooling(512, 512, 8000).to(device)
+    layer = CompactBilinearPooling(512, 8000).to(device)
 
-    out = layer(bottom1, bottom2)
+    out = layer(x)
+    print(out.shape)

@@ -3,7 +3,7 @@ import torch
 from .lrcn import LRCN
 from .gve import GVE
 from .sentence_classifier import SentenceClassifier
-from .image_classifier import ImageClassifier
+from .image_classifier import BilinearImageClassifier
 
 class ModelLoader:
     def __init__(self, args, dataset):
@@ -74,9 +74,9 @@ class ModelLoader:
         self.dataset.set_label_usage(True)
         # Image classifier arguments
         pretrained_model = self.args.pretrained_model
-        hidden_size = self.args.hidden_size
+        bilinear_dim = self.args.bilinear_dim
         num_classes = self.dataset.num_classes
 
-        ic = ImageClassifier(pretrained_model, hidden_size, num_classes)
+        ic = BilinearImageClassifier(pretrained_model, bilinear_dim, num_classes)
 
         return ic

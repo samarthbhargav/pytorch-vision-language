@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 from .pretrained_models import PretrainedModel
 from .bilinear import CompactBilinearPooling
@@ -24,12 +25,14 @@ class BilinearImageClassifier(nn.Module):
     def state_dict(self, *args, full_dict=False, **kwargs):
         return super().state_dict(*args, **kwargs)
 
-    def get_bilinear_features(self, image):
+    def get_bilinear_features(self, x):
         # Second hack for VGG16: reshaping feature maps
-        image_features = self.vision_model(image).view(-1, 512, 7, 7)
-        bilinear_features = self.cbp(image_features)
-        # TODO: element-wise signed square root layer
-        return bilinear_features
+        x = self.vision_model(x).view(-1, 512, 7, 7)
+        x = self.cbp(x)
+        # Element-wise signed square root layer and L2 normalization
+        x = torch.sign(x) * torch.sqrt(torch.abs(x) + 1e-12)
+        x = nn.functional.normalize(x, dim=-1)
+        return x
 
     def forward(self, image):
         bilinear_features = self.get_bilinear_features(image)

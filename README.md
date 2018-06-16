@@ -48,6 +48,11 @@ python main.py --model lrcn --dataset coco
 ```
 python main.py --model sc --dataset cub
 ```
+* and a bilinear image classifier:
+```
+python main.py --model ic --dataset cub
+```
+
 * Copy the saved model to the default path (or change the path to your model file) and then run the GVE training:
 ```
 cp ./checkpoints/sc-cub-D<date>-T<time>-G<GPUid>/best-ckpt.pth ./data/cub/sentence_classifier_ckpt.pth
@@ -81,6 +86,7 @@ weights_ckpt                  None
 loss_lambda                   0.01
 embedding_size                1000
 hidden_size                   1000
+bilinear-dim                  8192
 num_epochs                    50
 batch_size                    128
 learning_rate                 0.001

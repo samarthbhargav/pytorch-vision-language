@@ -132,6 +132,10 @@ class CompactBilinearPooling(nn.Module):
 
         return sparse_sketch_matrix.to_dense()
 
+    def extra_repr(self):
+        return 'input_dim1={}, input_dim2={}, output_dim={}'.format(
+            self.input_dim1, self.input_dim2, self.output_dim)
+
 
 if __name__ == '__main__':
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

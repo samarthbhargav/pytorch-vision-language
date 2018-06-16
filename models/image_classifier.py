@@ -1,5 +1,4 @@
 import torch.nn as nn
-import torch.nn.functional as F
 from .pretrained_models import PretrainedModel
 from .bilinear import CompactBilinearPooling
 
@@ -23,8 +22,12 @@ class BilinearImageClassifier(nn.Module):
     def state_dict(self, *args, full_dict=False, **kwargs):
         return super().state_dict(*args, **kwargs)
 
-    def forward(self, image):
+    def get_bilinear_features(self, image):
         image_features = self.vision_model(image)
         bilinear_features = self.cbp(image_features, image_features)
+        return bilinear_features
+
+    def forward(self, image):
+        bilinear_features = self.get_bilinear_features(image)
         logits = self.linear(bilinear_features)
         return logits

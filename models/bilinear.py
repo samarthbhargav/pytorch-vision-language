@@ -77,8 +77,8 @@ class CompactBilinearPooling(nn.Module):
         sketch_2 = x_flat.mm(self.sparse_sketch_matrix2)
 
         # Build real+imag arrays to compute FFT, with imag = 0
-        sketch_1 = torch.stack((sketch_1, torch.zeros(sketch_1.shape).to(device)), dim=-1)
-        sketch_2 = torch.stack((sketch_2, torch.zeros(sketch_2.shape).to(device)), dim=-1)
+        sketch_1 = torch.stack((sketch_1, torch.zeros(sketch_1.shape).to(self.device)), dim=-1)
+        sketch_2 = torch.stack((sketch_2, torch.zeros(sketch_2.shape).to(self.device)), dim=-1)
 
         fft1 = torch.fft(sketch_1, signal_ndim=1)
         fft2 = torch.fft(sketch_2, signal_ndim=1)
@@ -128,8 +128,8 @@ class CompactBilinearPooling(nn.Module):
         return sparse_sketch_matrix.to_dense()
 
     def extra_repr(self):
-        return 'input_dim1={}, input_dim2={}, output_dim={}'.format(
-            self.input_dim, self.input_dim, self.output_dim)
+        return 'input_dim1={}, output_dim={}'.format(
+            self.input_dim, self.output_dim)
 
 
 if __name__ == '__main__':

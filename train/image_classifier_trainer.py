@@ -1,11 +1,8 @@
-import os
-
 import torch
 import torch.nn as nn
-from torch.nn.utils.rnn import pack_padded_sequence
 import numpy as np
 
-class ImageTrainer:
+class ImageClassifierTrainer:
 
     def __init__(self, args, model, dataset, data_loader, logger, device, checkpoint=None):
         self.model = model
@@ -30,6 +27,8 @@ class ImageTrainer:
         result = []
 
         for i, (images, word_inputs, word_targets, lengths, ids, labels) in enumerate(self.data_loader):
+            images = images.to(self.device)
+
             # Prepare mini-batch dataset
             if self.train:
                 labels = labels.to(self.device)

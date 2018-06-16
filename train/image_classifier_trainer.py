@@ -4,7 +4,7 @@ import numpy as np
 
 class ImageClassifierTrainer:
 
-    REQ_EVAL = True
+    REQ_EVAL = False
 
     def __init__(self, args, model, dataset, data_loader, logger, device, checkpoint=None):
         self.model = model

@@ -33,6 +33,21 @@ class Vocabulary():
             return self.unknown_token
         return self.idx2word[idx]
 
+    def tokens2words(self, tokens):
+        sentences = []
+        if tokens.dim() == 1:
+            tokens = tokens.unsqueeze(0)
+        for out_idx in range(len(tokens)):
+            sentence = []
+            for w in tokens[out_idx]:
+                word = self.get_word_from_idx(w.data.item())
+                if word != self.end_token:
+                    sentence.append(word)
+                else:
+                    break
+            sentences.append(' '.join(sentence))
+        return sentences
+
     def __call__(self, word):
         if not word in self.word2idx:
             return self.word2idx[self.unknown_token]

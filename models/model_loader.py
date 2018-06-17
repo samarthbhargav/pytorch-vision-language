@@ -37,7 +37,7 @@ class ModelLoader:
         vocab_size = len(self.dataset.vocab)
 
         ic = None
-        # There are three ways to handle images
+        # There are three ways to get image features
         # 1) Use precomputed features
         if self.dataset.use_image_features:
             input_type = self.dataset.input_size
@@ -47,6 +47,9 @@ class ModelLoader:
                 ic = self.ic()
                 ic.load_state_dict(torch.load(self.args.ic_ckpt, map_location=self.location))
                 input_type = ic.bilinear_dim
+                for param in ic.parameters():
+                    param.requires_grad = False
+                ic.eval()
             # 3) Use features from a pretrained model like VGG16
             else:
                 input_type = self.args.pretrained_model
@@ -59,7 +62,7 @@ class ModelLoader:
             param.requires_grad = False
         sc.eval()
 
-        gve = GVE(input_type, embedding_size, hidden_size, vocab_size, sc,
+        gve = GVE(input_type, embedding_size, hidden_size, vocab_size, ic, sc,
                 num_classes)
 
         if self.args.weights_ckpt:

@@ -39,6 +39,8 @@ def get_args():
                         help="[LRCN] number of final FC layers to be removed from pretrained model")
     parser.add_argument('--sc-ckpt', type=str, default='data/cub/sentence_classifier_ckpt.pth',
                         help="[GVE] path to checkpoint for pretrained sentence classifier")
+    parser.add_argument('--ic-ckpt', type=str, default='data/cub/image_classifier_ckpt.pth',
+                        help="[GVE] path to checkpoint for pretrained image classifier")
     parser.add_argument('--weights-ckpt', type=str,
                         help="[GVE] path to checkpoint for pretrained weights")
     parser.add_argument('--loss-lambda', type=float, default=0.01,

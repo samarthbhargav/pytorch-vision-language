@@ -50,7 +50,7 @@ if __name__ == '__main__':
     print()
 
     print("Loading Model ...")
-    ml = ModelLoader(args, dataset)
+    ml = ModelLoader(args, dataset, device)
     model = getattr(ml, args.model)()
     print(model, '\n')
 

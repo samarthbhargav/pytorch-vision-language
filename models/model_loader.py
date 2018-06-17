@@ -6,9 +6,13 @@ from .sentence_classifier import SentenceClassifier
 from .image_classifier import BilinearImageClassifier
 
 class ModelLoader:
-    def __init__(self, args, dataset):
+    def __init__(self, args, dataset, device):
         self.args = args
         self.dataset = dataset
+        if device.type == 'cpu':
+            self.location = 'cpu'
+        else:
+            self.location = '{}:{}'.format(device.type, device.index)
 
     def lrcn(self):
         # LRCN arguments
@@ -33,19 +37,19 @@ class ModelLoader:
         vocab_size = len(self.dataset.vocab)
 
         if self.dataset.use_image_features:
-            input_size = self.dataset.input_size
+            input_type = self.dataset.input_size
         else:
-            input_size = self.args.pretrained_model
+            input_type = self.args.pretrained_model
 
         num_classes = self.dataset.num_classes
 
         sc = self.sc()
-        # sc.load_state_dict(torch.load(self.args.sc_ckpt))
+        sc.load_state_dict(torch.load(self.args.sc_ckpt, map_location=self.location))
         for param in sc.parameters():
             param.requires_grad = False
         sc.eval()
 
-        gve = GVE(input_size, embedding_size, hidden_size, vocab_size, sc,
+        gve = GVE(input_type, embedding_size, hidden_size, vocab_size, sc,
                 num_classes)
 
         if self.args.weights_ckpt:

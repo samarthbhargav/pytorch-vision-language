@@ -19,9 +19,9 @@ class GVE(LRCN):
         lstm2_input_size = 2*hidden_size + num_classes
         self.lstm2 = nn.LSTM(lstm2_input_size, hidden_size, batch_first=True)
 
-    def convert_onehot(self, labels):
+    def convert_onehot(self, labels):        
         labels_onehot = torch.zeros(labels.size(0),
-                self.num_classes)
+                self.num_classes).to(labels.device)
         labels_onehot.scatter_(1, labels.unsqueeze(1), 1)
         return labels_onehot
 

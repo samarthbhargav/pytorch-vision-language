@@ -38,3 +38,9 @@ class BilinearImageClassifier(nn.Module):
         bilinear_features = self.get_bilinear_features(image)
         logits = self.linear(bilinear_features)
         return logits
+
+    def get_features_labels(self, image):
+        bilinear_features = self.get_bilinear_features(image)
+        logits = self.linear(bilinear_features)
+        _, labels = torch.max(logits.data, 1)
+        return bilinear_features, labels

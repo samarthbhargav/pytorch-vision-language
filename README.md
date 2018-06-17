@@ -50,7 +50,7 @@ python main.py --model sc --dataset cub
 ```
 * and a bilinear image classifier:
 ```
-python main.py --model ic --dataset cub
+python main.py --model ic --dataset cub --pretrained-model vgg16
 ```
 
 * Copy the saved model to the default path (or change the path to your model file) and then run the GVE training:

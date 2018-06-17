@@ -36,10 +36,20 @@ class ModelLoader:
         hidden_size = self.args.hidden_size
         vocab_size = len(self.dataset.vocab)
 
+        ic = None
+        # There are three ways to handle images
+        # 1) Use precomputed features
         if self.dataset.use_image_features:
             input_type = self.dataset.input_size
         else:
-            input_type = self.args.pretrained_model
+            # 2) Use a pretrained compact bilinear classifier
+            if self.args.ic_ckpt is not None:
+                ic = self.ic()
+                ic.load_state_dict(torch.load(self.args.ic_ckpt, map_location=self.location))
+                input_type = ic.bilinear_dim
+            # 3) Use features from a pretrained model like VGG16
+            else:
+                input_type = self.args.pretrained_model
 
         num_classes = self.dataset.num_classes
 

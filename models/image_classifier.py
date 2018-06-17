@@ -12,7 +12,7 @@ class BilinearImageClassifier(nn.Module):
 
         # First hack for VGG16
         img_feat_size = 512
-
+        self.bilinear_dim = bilinear_dim
         self.cbp = CompactBilinearPooling(img_feat_size, bilinear_dim)
         self.linear = nn.Linear(bilinear_dim, num_classes)
         self.init_weights()

@@ -247,8 +247,36 @@ img.article-image {
 
         .sample_image_conatiner {
             text-align: center;
-        }
 
+            img {
+                margin: auto;
+            }
+        }
+    }
+
+    .adversarial {
+        width: 100%;
+
+        .attack {
+            text-align: center;
+            margin: 20px;
+
+            .attack-button {
+                height: 45px;
+                width: 200px;
+                line-height: 45px;
+                background: #e51c23;
+                color: #fff;
+
+                .mdl-ripple {
+                    background: #000;
+                }
+            }
+        }
+    }
+
+    .factual,
+    .adversarial {
         .mdl-card {
             display: inline-block;
             margin: 5px;
@@ -273,6 +301,31 @@ img.article-image {
 
             .mdl-card__title {
                 padding: 0;
+            }
+        }
+
+        .explanation_container {
+            .mdl-card {
+                display: inline-block;
+                height: auto;
+                vertical-align: middle;
+
+                &.image_card {
+                    width: 30%;
+
+                    img {
+                        margin: auto;
+                        max-width: 100%;
+                    }
+
+                    .overlay {
+                        width: 100%;
+                    }
+                }
+
+                &.explanation_card {
+                    width: 65%;
+                }
             }
         }
     }

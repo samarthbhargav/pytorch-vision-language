@@ -111,8 +111,8 @@ class LRCN(nn.Module):
         end_word = end_word.squeeze().expand(image_features.size(0))
         reached_end = torch.zeros_like(end_word.data).byte()
 
+        log_probabilities = []
         if sample:
-            log_probabilities = []
             lengths = torch.zeros_like(reached_end).long()
 
         i = 0
@@ -132,10 +132,10 @@ class LRCN(nn.Module):
                 predicted, log_p = self.sample(outputs)
                 active_batches = (~reached_end)
                 log_p *= active_batches.float().to(log_p.device)
-                log_probabilities.append(log_p.unsqueeze(1))
                 lengths += active_batches.long()
             else:
-                predicted = outputs.max(1)[1]
+                log_p, predicted = outputs.max(1)
+            log_probabilities.append(log_p.unsqueeze(1))
             reached_end = reached_end | predicted.eq(end_word).data
             sampled_ids.append(predicted.unsqueeze(1))
             embedded_word = self.word_embed(predicted)
@@ -144,8 +144,8 @@ class LRCN(nn.Module):
             i += 1
 
         sampled_ids = torch.cat(sampled_ids, 1).squeeze()
+        log_probabilities = torch.cat(log_probabilities, 1).squeeze()
         if sample:
-            log_probabilities = torch.cat(log_probabilities, 1).squeeze()
             return sampled_ids, log_probabilities, lengths
-        return sampled_ids
+        return sampled_ids, log_probabilities
 

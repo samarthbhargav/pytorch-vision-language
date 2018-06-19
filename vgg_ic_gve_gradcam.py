@@ -103,7 +103,7 @@ trainer = trainer_creator(args, model, dataset, data_loader, logger=None, device
 # Given an image id, retrieve image and label
 # (assuming the image exists in the corresponding dataset!)
 images_path = 'data/cub/images/'
-img_ids = ('121.Grasshopper_Sparrow/Grasshopper_Sparrow_0078_116052.jpg',)
+img_ids = ('070.Green_Violetear/Green_Violetear_0072_60858.jpg',)
 # img_ids = ('121.Grasshopper_Sparrow/Grasshopper_Sparrow_0078_116052.jpg'
 #     '030.Fish_Crow/Fish_Crow_0073_25977.jpg',
 #     '014.Indigo_Bunting/Indigo_Bunting_0027_11579.jpg',
@@ -150,21 +150,33 @@ for img_id in img_ids:
     plt.title(explanation)
     plt.axis('off')
     plt.show()
+
+    masks = np.zeros((224, 224, len(log_probs)))
+
     for i, log_p in enumerate(log_probs):
         model.zero_grad()
         log_probs[i].backward(retain_graph=True)
 
         # Plot results
-        plt.figure(figsize=(15,15))
+
         #plt.subplot(1, 2, 1)
         #plt.imshow(image)
         #plt.title(explanation)
         #plt.axis('off')
         #plt.subplot(1, 2, 2)
         # Scale grad-cam to the interval [0, 1]
-        visual_sc = visual / np.max(visual)
+        #visual_sc = visual / np.max(visual)
+        masks[..., i] = visual#_sc**2
+
+    mask_avg = np.mean(masks, axis=2)
+
+    for i, log_p in enumerate(log_probs):
+        mask = masks[..., i] - mask_avg
+        mask = np.clip(mask, 0, np.max(mask))
+        mask = mask/np.max(mask)
         # Mask the image
-        masked = (visual_sc[..., np.newaxis]**2 * np_image).astype(np.uint8)
+        masked = (mask[..., np.newaxis] * np_image).astype(np.uint8)
+        plt.figure(figsize=(15, 15))
         plt.imshow(masked)
         word = dataset.vocab.get_word_from_idx(outputs[i].item())
         plt.title(word)

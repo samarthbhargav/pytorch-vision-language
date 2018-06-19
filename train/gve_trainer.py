@@ -21,6 +21,10 @@ class GVETrainer(LRCNTrainer):
     def train_step(self, image_input, word_inputs, word_targets, lengths,
             labels):
         # Forward, Backward and Optimize
+        # If there is an image classifier, obtain features and labels from it
+        if self.model.image_classifier is not None:
+            image_input, labels = self.model.image_classifier.get_features_labels(image_input)
+
         labels_onehot = self.model.convert_onehot(labels)
         labels_onehot = labels_onehot.to(self.device)
         self.model.zero_grad()
@@ -75,3 +79,10 @@ class GVETrainer(LRCNTrainer):
         r_loss = -(log_ps.sum(dim=1) * rewards).sum()
 
         return r_loss/labels.size(0)
+
+    def eval_step(self, image_input, ids, *args):
+        # If there is an image classifier, obtain features and labels from it
+        if self.model.image_classifier is not None:
+            image_input, args = self.model.image_classifier.get_features_labels(image_input)
+        return super(GVETrainer, self).eval_step(image_input, ids, args)
+

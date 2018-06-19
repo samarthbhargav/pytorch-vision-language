@@ -23,7 +23,7 @@ args.num_epochs = 1
 args.batch_size = 1
 # set to train because we need gradients for Grad-CAM
 args.train = True
-args.eval_ckpt = 'data/vgg-vge-best-ckpt.pth'
+args.eval_ckpt = 'data/vgg-gve-best-ckpt.pth'
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -37,7 +37,7 @@ dataset, data_loader = data_prep.get_dataset_and_loader(split, args.pretrained_m
 
 # Load VGE model
 print("Loading Model ...")
-ml = ModelLoader(args, dataset)
+ml = ModelLoader(args, dataset, device)
 model = getattr(ml, args.model)()
 print(model, '\n')
 print("Loading Model Weights ...")

@@ -44,7 +44,7 @@ class ExplanationModel:
 
         # Load VGE model
         print("Loading Model ...")
-        ml = ModelLoader(args, dataset)
+        ml = ModelLoader(args, dataset, device)
         model = getattr(ml, args.model)()
         print(model, "\n")
         print("Loading Model Weights ...")

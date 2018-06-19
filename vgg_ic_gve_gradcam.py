@@ -103,22 +103,22 @@ trainer = trainer_creator(args, model, dataset, data_loader, logger=None, device
 # Given an image id, retrieve image and label
 # (assuming the image exists in the corresponding dataset!)
 images_path = 'data/cub/images/'
-img_ids = ('100.Brown_Pelican/Brown_Pelican_0122_94022.jpg',)
-    # '041.Scissor_tailed_Flycatcher/Scissor_Tailed_Flycatcher_0023_42117.jpg',
-    # '151.Black_capped_Vireo/Black_Capped_Vireo_0043_797458.jpg',
-    # '155.Warbling_Vireo/Warbling_Vireo_0030_158488.jpg',
-    # '008.Rhinoceros_Auklet/Rhinoceros_Auklet_0030_797509.jpg',
-    # '079.Belted_Kingfisher/Belted_Kingfisher_0105_70550.jpg',
-    # '089.Hooded_Merganser/Hooded_Merganser_0049_79136.jpg',
-    # '064.Ring_billed_Gull/Ring_Billed_Gull_0074_52258.jpg',
-    # '098.Scott_Oriole/Scott_Oriole_0016_92398.jpg',
-    # '013.Bobolink/Bobolink_0053_10166.jpg',
-    # '003.Sooty_Albatross/Sooty_Albatross_0040_796375.jpg',
-    # '026.Bronzed_Cowbird/Bronzed_Cowbird_0086_796259.jpg',
-    # '092.Nighthawk/Nighthawk_0018_83639.jpg',
-    # '035.Purple_Finch/Purple_Finch_0025_28174.jpg',
-    # '037.Acadian_Flycatcher/Acadian_Flycatcher_0045_795587.jpg',
-    # '066.Western_Gull/Western_Gull_0028_55680.jpg')
+img_ids = ('121.Grasshopper_Sparrow/Grasshopper_Sparrow_0078_116052.jpg',)
+# img_ids = ('121.Grasshopper_Sparrow/Grasshopper_Sparrow_0078_116052.jpg'
+#     '030.Fish_Crow/Fish_Crow_0073_25977.jpg',
+#     '014.Indigo_Bunting/Indigo_Bunting_0027_11579.jpg',
+#     '047.American_Goldfinch/American_Goldfinch_0040_32323.jpg',
+#     '070.Green_Violetear/Green_Violetear_0072_60858.jpg',
+#     '109.American_Redstart/American_Redstart_0126_103091.jpg',
+#     '098.Scott_Oriole/Scott_Oriole_0017_795832.jpg',
+#     '027.Shiny_Cowbird/Shiny_Cowbird_0043_796857.jpg',
+#     '114.Black_throated_Sparrow/Black_Throated_Sparrow_0043_107236.jpg',
+#     '003.Sooty_Albatross/Sooty_Albatross_0048_1130.jpg',
+#     '127.Savannah_Sparrow/Savannah_Sparrow_0032_120109.jpg',
+#     '177.Prothonotary_Warbler/Prothonotary_Warbler_0022_174138.jpg',
+#     '131.Vesper_Sparrow/Vesper_Sparrow_0083_125718.jpg',
+#     '026.Bronzed_Cowbird/Bronzed_Cowbird_0073_796226.jpg',
+#     '177.Prothonotary_Warbler/Prothonotary_Warbler_0033_174123.jpg')
 
 for img_id in img_ids:
     raw_image = Image.open(os.path.join(images_path, img_id))
@@ -140,8 +140,13 @@ for img_id in img_ids:
     #print('image_input.grad.sum():\n', image_input.grad.sum())
 
     # Plot results
+    np_image = image_input.squeeze().permute(1, 2, 0).data.numpy()
+    np_image = np_image - np.min(np_image)
+    np_image = np_image * 255 / np.max(np_image)
+    np_image = np_image.astype(np.uint8)
+    image = Image.fromarray(np_image)
     plt.figure(figsize=(15, 15))
-    plt.imshow(raw_image)
+    plt.imshow(image)
     plt.title(explanation)
     plt.axis('off')
     plt.show()
@@ -151,12 +156,16 @@ for img_id in img_ids:
 
         # Plot results
         plt.figure(figsize=(15,15))
-        plt.subplot(1, 2, 1)
-        plt.imshow(raw_image)
-        plt.title(explanation)
-        plt.axis('off')
-        plt.subplot(1, 2, 2)
-        plt.imshow(visual)
+        #plt.subplot(1, 2, 1)
+        #plt.imshow(image)
+        #plt.title(explanation)
+        #plt.axis('off')
+        #plt.subplot(1, 2, 2)
+        # Scale grad-cam to the interval [0, 1]
+        visual_sc = visual / np.max(visual)
+        # Mask the image
+        masked = (visual_sc[..., np.newaxis]**2 * np_image).astype(np.uint8)
+        plt.imshow(masked)
         word = dataset.vocab.get_word_from_idx(outputs[i].item())
         plt.title(word)
         plt.axis('off')

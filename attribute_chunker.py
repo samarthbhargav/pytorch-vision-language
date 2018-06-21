@@ -75,7 +75,7 @@ class CounterFactualGenerator:
             if count == 0:
                 break
 
-    def generate_cf(self, expl, other_expl, addtn_limit = 3):
+    def generate(self, expl, other_expl, addtn_limit = 3):
         chunks = self.to_dict(self.ch.chunk(expl))
         other_ch = self.to_dict(self.ch.chunk(other_expl))
 
@@ -99,8 +99,8 @@ class CounterFactualGenerator:
                 if len(diff_adj) == 0:
                     continue
 
-                added_attr.extend([Attribute(noun, adj) for adj in chunks[noun]])
-                added_attr_other.extend([Attribute(noun, adj) for adj in diff_adj])
+                added_attr.extend([Attribute(noun, adj, -1) for adj in chunks[noun]])
+                added_attr_other.extend([Attribute(noun, adj, -1) for adj in diff_adj])
                 cf_expl += "has a {} {} and not a ".format(" ".join(chunks[noun]), noun)
                 cf_expl += "{} {} and ".format(" ".join(diff_adj), noun)
 
@@ -115,7 +115,7 @@ class CounterFactualGenerator:
             for noun in missing_nouns:
                 if len(added_attr) + len(added_attr_other) >= addtn_limit:
                     break
-                added_attr_other.extend([Attribute(noun, adj) for adj in diff_adj])
+                added_attr_other.extend([Attribute(noun, adj, -1) for adj in diff_adj])
                 cf_expl += "doesn't have a {} {}".format(" ".join(other_ch[noun]), noun)
         
         cf_expl = cf_expl.strip().strip("and").strip()
@@ -136,7 +136,7 @@ if __name__ == "__main__":
 
     cfe = CounterFactualExplanations(explanations)
 
-    cf, added, added_other = cfe.generate_cf(
+    cf, added, added_other = cfe.generate(
         "this bird has a brown crown and a black belly",
         "this bird has a pointy brown crown and a white belly and yellow beak"
     , addtn_limit=10)

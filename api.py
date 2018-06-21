@@ -6,10 +6,10 @@ from data_api import DataApi
 from flask import Flask, url_for
 from flask_cors import CORS
 from flask_restful import Api, Resource
-from model_api import CounterFactualExplanationModel, ExplanationModel
+from model_api import ExplanationModel
 from PIL import Image
 from flask_restful import reqparse
-
+from attribute_chunker import CounterFactualGenerator
 
 app = Flask(__name__, static_folder="data")
 api = Api(app)
@@ -17,7 +17,7 @@ CORS(app)
 
 data_api = DataApi()
 explanation_model = ExplanationModel()
-cf_explanation_model = CounterFactualExplanationModel()
+cf_gen = CounterFactualGenerator()
 
 
 def any_response(data):
@@ -74,26 +74,36 @@ class SampleImagesResource(Resource):
 
 
 class CounterFactualResource(Resource):
+    def _parser(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument("cf_limit", type=int, required=False, default=3)
+        return parser
+
     def to_chunks(self, attr):
-        return ["{} {}".format(a.description, a.adjective) for a in attr]
+        return ["{} {}".format(a.description, a.attribute) for a in attr]
 
     def get(self, class_true, class_false):
         true_image = data_api.sample_class(class_true)
         false_image = data_api.sample_class(class_false)
         self.fill_image(true_image)
         self.fill_image(false_image)
-        cf_expl, added_other, added = cf_explanation_model.generate(image1, image2)
+        args = self._parser().parse_args()
+
+        cf_expl, added_other, added = cf_gen.generate(
+            true_image["explanation"], false_image["explanation"], addtn_limit=args.cf_limit
+        )
+
         return {
             "class_true": class_true,
             "class_false": class_false,
             "images": [true_image, false_image],
-            "cf_explanation": cf_expl,
-            "added_attributes_true": self.to_chunks(added),
-            "added_attributes_false": self.to_chunks(added_other),
+            "cf_explanation": cf_expl
         }
 
     def fill_image(self, image):
-        image["explanation"] = explanation_model.generate_explanation(image)
+        image["explanation"], _, _ = explanation_model.generate(
+            image, word_highlights=False, adversarial=False
+        )
 
         # print(image["path"])
         path = os.path.join(*image["path"].split("/")[1:])

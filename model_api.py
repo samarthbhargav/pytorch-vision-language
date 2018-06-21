@@ -103,7 +103,8 @@ class ExplanationModel:
         return features, labels
 
     def generate(self, image, word_highlights=False, adversarial=False):
-
+        np.random.seed(42)
+        torch.manual_seed(42)
         # Grad-CAM
         def process_fmap_grad(grad):
             print("Called hook! Gradient has shape", grad.shape)

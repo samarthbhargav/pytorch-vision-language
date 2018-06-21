@@ -5,10 +5,13 @@ import pickle as pkl
 from collections import defaultdict
 import random
 
+
 class DataApi:
     # TODO figure out how to do this for test images
-    def __init__(self, location="data/cub/"):        
-        self.description_test = self.get_descriptions(os.path.join(location, "descriptions_bird.train.fg.json"))
+    def __init__(self, location="data/cub/"):
+        self.description_test = self.get_descriptions(
+            os.path.join(location, "descriptions_bird.test.fg.json")
+        )
         self.data = []
         self.classes = defaultdict(list)
         self.images = {}
@@ -20,20 +23,22 @@ class DataApi:
 
         for index, image in enumerate(self.description_test["images"]):
             class_label = image["id"].split(".")[1].split("/")[0]
-            
+
             self.classes[class_label].append(index)
-        
+
             image_index = "_".join(image["file_name"].split("/")[1].split("_")[:-1])
 
-            self.data.append({
-                "class_label": class_label,
-                "id": image["id"],
-                "path": os.path.join(location, "images",  image["file_name"]),
-                "caption": annotations[image["id"]]
-            })
+            self.data.append(
+                {
+                    "class_label": class_label,
+                    "id": image["id"],
+                    "path": os.path.join(location, "images", image["file_name"]),
+                    "caption": annotations[image["id"]],
+                }
+            )
 
             assert os.path.exists(self.data[-1]["path"])
-    
+
     def sample_images(self, n):
         images = []
         for _ in range(n):
@@ -42,7 +47,7 @@ class DataApi:
 
     def get_image(self, image_id):
         img = next((img for img in self.data if img["id"] == image_id), None)
-        # Return a copy 
+        # Return a copy
         return img.copy()
 
     def get_descriptions(self, path):
@@ -55,4 +60,3 @@ class DataApi:
     def sample_class(self, klass):
         idx = random.choice(self.classes[klass])
         return self.data[idx].copy()
-    

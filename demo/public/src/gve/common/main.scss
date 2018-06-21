@@ -3,6 +3,36 @@
 
 /* THEME START */
 
+.overlay {
+    position: absolute;
+    opacity: 0.5;
+}
+
+.mdl-layout__tab-panel {
+    min-height: 600px;
+}
+
+.class_label {
+    color: #ff7a00;
+}
+
+.anchor {
+    cursor: pointer;
+
+    &.anchor1 {
+        color: #7FDBFF;
+    }
+    &.anchor2 {
+        color: #85144b;
+    }
+    &.anchor3 {
+        color: #2ECC40;
+    }
+    &.anchor4 {
+        color: #B10DC9;
+    }
+}
+
 .sam-text {
     height: 72px;
 }
@@ -143,6 +173,7 @@ img.article-image {
 .demo-page {
     padding: 20px;
 
+    .factual,
     .counterfactual {
         width: 100%;
 
@@ -192,7 +223,114 @@ img.article-image {
                 }
             }
         }
+    }
 
+    .factual {
+        .controls {
+            position: relative;
+
+            .refresh {
+                position: absolute;
+                top: -20px;
+                right: 30px;
+
+                .refresh-button {
+                    background: #3f51b5;
+                    color: #fff;
+
+                    .mdl-ripple {
+                        background: #fff;
+                    }
+                }
+            }
+        }
+
+        .sample_image_conatiner {
+            text-align: center;
+
+            img {
+                margin: auto;
+            }
+        }
+    }
+
+    .adversarial {
+        width: 100%;
+
+        .attack {
+            text-align: center;
+            margin: 20px;
+
+            .attack-button {
+                height: 45px;
+                width: 200px;
+                line-height: 45px;
+                background: #e51c23;
+                color: #fff;
+
+                .mdl-ripple {
+                    background: #000;
+                }
+            }
+        }
+    }
+
+    .factual,
+    .adversarial {
+        .mdl-card {
+            display: inline-block;
+            margin: 5px;
+            height: 100px;
+            min-height: auto;
+            min-width: auto;
+            width: 150px;
+            border: 2px solid transparent;
+
+            &.explanation_card {
+                width: 100%;
+
+                h5 {
+                    margin: 0;
+                    line-height: 1.6;
+                }
+            }
+
+            &.image_card.current {
+                border-color: #ff7a00;
+            }
+
+            .mdl-card__title {
+                padding: 0;
+            }
+        }
+
+        .explanation_container {
+            .mdl-card {
+                display: inline-block;
+                height: auto;
+                vertical-align: middle;
+
+                &.image_card {
+                    width: 30%;
+
+                    img {
+                        margin: auto;
+                        max-width: 100%;
+                    }
+
+                    .overlay {
+                        width: 100%;
+                    }
+                }
+
+                &.explanation_card {
+                    width: 65%;
+                }
+            }
+        }
+    }
+
+    .counterfactual {
         .mdl-card {
             &.explanation_card {
                 min-height: 0px;

@@ -3,12 +3,16 @@ import torch
 from .lrcn import LRCN
 from .gve import GVE
 from .sentence_classifier import SentenceClassifier
-from .image_classifier import ImageClassifier
+from .image_classifier import BilinearImageClassifier
 
 class ModelLoader:
-    def __init__(self, args, dataset):
+    def __init__(self, args, dataset, device):
         self.args = args
         self.dataset = dataset
+        if device.type == 'cpu':
+            self.location = 'cpu'
+        else:
+            self.location = '{}:{}'.format(device.type, device.index)
 
     def lrcn(self):
         # LRCN arguments
@@ -32,20 +36,34 @@ class ModelLoader:
         hidden_size = self.args.hidden_size
         vocab_size = len(self.dataset.vocab)
 
+        ic = None
+        # There are three ways to get image features
+        # 1) Use precomputed features
         if self.dataset.use_image_features:
-            input_size = self.dataset.input_size
+            input_type = self.dataset.input_size
         else:
-            input_size = self.args.pretrained_model
+            # 2) Use a pretrained compact bilinear classifier
+            if self.args.ic_ckpt is not None:
+                ic = self.ic()
+                ic.load_state_dict(torch.load(self.args.ic_ckpt, map_location=self.location))
+                input_type = ic.bilinear_dim
+                for param in ic.parameters():
+                    param.requires_grad = False
+                ic.eval()
+            # 3) Use features from a pretrained model like VGG16
+            else:
+                input_type = self.args.pretrained_model
 
         num_classes = self.dataset.num_classes
 
         sc = self.sc()
-        # sc.load_state_dict(torch.load(self.args.sc_ckpt))
+        sc.load_state_dict(torch.load(self.args.sc_ckpt, map_location=self.location))
+
         for param in sc.parameters():
             param.requires_grad = False
         sc.eval()
 
-        gve = GVE(input_size, embedding_size, hidden_size, vocab_size, sc,
+        gve = GVE(input_type, embedding_size, hidden_size, vocab_size, ic, sc,
                 num_classes)
 
         if self.args.weights_ckpt:
@@ -74,9 +92,9 @@ class ModelLoader:
         self.dataset.set_label_usage(True)
         # Image classifier arguments
         pretrained_model = self.args.pretrained_model
-        hidden_size = self.args.hidden_size
+        bilinear_dim = self.args.bilinear_dim
         num_classes = self.dataset.num_classes
 
-        ic = ImageClassifier(pretrained_model, hidden_size, num_classes)
+        ic = BilinearImageClassifier(pretrained_model, bilinear_dim, num_classes)
 
         return ic

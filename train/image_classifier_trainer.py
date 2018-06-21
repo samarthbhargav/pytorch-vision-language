@@ -1,11 +1,10 @@
-import os
-
 import torch
 import torch.nn as nn
-from torch.nn.utils.rnn import pack_padded_sequence
 import numpy as np
 
-class ImageTrainer:
+class ImageClassifierTrainer:
+
+    REQ_EVAL = False
 
     def __init__(self, args, model, dataset, data_loader, logger, device, checkpoint=None):
         self.model = model
@@ -30,19 +29,18 @@ class ImageTrainer:
         result = []
 
         for i, (images, word_inputs, word_targets, lengths, ids, labels) in enumerate(self.data_loader):
+            images = images.to(self.device)
+            labels = labels.to(self.device)
+
             # Prepare mini-batch dataset
             if self.train:
-                labels = labels.to(self.device)
-
                 loss = self.train_step(images, labels)
                 result.append(loss.data.item())
 
                 step = self.curr_epoch * self.total_steps + i + 1
                 self.logger.scalar_summary('batch_loss', loss.data.item(), step)
-
             else:
-                labels = labels.to(self.device)
-                score = self.eval_step(labels, lengths)
+                score = self.eval_step(images, labels)
                 result.append(score)
 
             # TODO: Add proper logging
@@ -69,10 +67,10 @@ class ImageTrainer:
         return result
 
 
-    def train_step(self, image_features, class_labels):
+    def train_step(self, images, class_labels):
         # Forward, Backward and Optimize
         self.model.zero_grad()
-        outputs = self.model(image_features)
+        outputs = self.model(images)
         loss = self.criterion(outputs, class_labels)
         loss.backward()
         self.optimizer.step()
@@ -80,8 +78,8 @@ class ImageTrainer:
         return loss
 
 
-    def eval_step(self, image_features, class_labels):
-        outputs = self.model(image_features)
+    def eval_step(self, images, class_labels):
+        outputs = self.model(images)
         _, predicted = torch.max(outputs.data, 1)
 
         return [class_labels.size(0), (predicted == class_labels).sum()]

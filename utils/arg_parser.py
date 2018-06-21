@@ -39,15 +39,21 @@ def get_args():
                         help="[LRCN] number of final FC layers to be removed from pretrained model")
     parser.add_argument('--sc-ckpt', type=str, default='data/cub/sentence_classifier_ckpt.pth',
                         help="[GVE] path to checkpoint for pretrained sentence classifier")
+    parser.add_argument('--ic-ckpt', type=str,
+                        help="[GVE] path to checkpoint for pretrained image classifier")
     parser.add_argument('--weights-ckpt', type=str,
                         help="[GVE] path to checkpoint for pretrained weights")
     parser.add_argument('--loss-lambda', type=float, default=0.01,
                         help="[GVE] weight factor for reinforce loss")
+    parser.add_argument('--train-mismatch', type=float, default=0,
+                        help="[GVE] weight factor for mismatch loss")
 
     parser.add_argument('--embedding-size', type=int , default=1000,
                         help='dimension of the word embedding')
-    parser.add_argument('--hidden-size', type=int , default=1000,
+    parser.add_argument('--hidden-size', type=int, default=1000,
                         help='dimension of hidden layers')
+    parser.add_argument('--bilinear-dim', type=int , default=8192,
+                        help='dimension of the compact bilinear features')
 
     parser.add_argument('--num-epochs', type=int, default=50)
     parser.add_argument('--batch-size', type=int, default=128)

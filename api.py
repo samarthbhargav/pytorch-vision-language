@@ -11,7 +11,7 @@ from PIL import Image
 from flask_restful import reqparse
 from attribute_chunker import CounterFactualGenerator
 
-app = Flask(__name__, static_folder="data")
+app = Flask(__name__)
 api = Api(app)
 CORS(app)
 
@@ -53,8 +53,7 @@ class ExplanationResource(Resource):
         args = self._parser().parse_args()
         print(args)
         image["explanation"], np_image, word_masks = explanation_model.generate(
-            image,
-            word_highlights=args.word_highlights
+            image, word_highlights=args.word_highlights
         )
         image["image"] = npimg2base64(np_image)
 
@@ -68,7 +67,10 @@ class ExplanationResource(Resource):
 
 class SampleImagesResource(Resource):
     def get(self, n):
-        return data_api.sample_images(n)
+        images = data_api.sample_images(n)
+        for image in images:
+            image["image"] = npimg2base64(explanation_model.get_img(image["id"]))
+        return images
 
 
 class AttackOfTheClones(Resource):
@@ -129,12 +131,7 @@ class CounterFactualResource(Resource):
         image["explanation"], _, _ = explanation_model.generate(
             image, word_highlights=False
         )
-
-        # print(image["path"])
-        path = os.path.join(*image["path"].split("/")[1:])
-        # print(path)
-        del image["path"]
-        image["url"] = url_for("static", filename=path)
+        image["image"] = npimg2base64(explanation_model.get_img(image["id"]))
 
 
 api.add_resource(AvailableClassesResource, "/classes")

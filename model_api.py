@@ -167,6 +167,9 @@ class ExplanationModel:
 
         return loss, explanation
 
+    def get_img(self, img_id):
+        return tensor_to_img(self.dataset.get_image(img_id))
+
     def generate_adversarial(self, img_id, epsilon = 0.1, word_index=None):
         
         image_input = self.dataset.get_image(img_id).unsqueeze(dim=0)

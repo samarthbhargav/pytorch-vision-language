@@ -33,7 +33,7 @@ def npimg2base64(img):
     pil_img = Image.fromarray(img)
     buff = io.BytesIO()
     pil_img.save(buff, format="JPEG")
-    return base64.b64encode(buff.getvalue()).decode("utf-8")
+    return "data:image/jpeg;base64," + base64.b64encode(buff.getvalue()).decode("utf-8")
 
 
 class AvailableClassesResource(Resource):
@@ -44,7 +44,6 @@ class AvailableClassesResource(Resource):
 class ExplanationResource(Resource):
     def _parser(self):
         parser = reqparse.RequestParser()
-        parser.add_argument("adversarial", type=bool, required=False, default=False)
         parser.add_argument("word_highlights", type=bool, required=False, default=False)
         return parser
 
@@ -55,8 +54,7 @@ class ExplanationResource(Resource):
         print(args)
         image["explanation"], np_image, word_masks = explanation_model.generate(
             image,
-            word_highlights=args.word_highlights,
-            adversarial=args.word_highlights,
+            word_highlights=args.word_highlights
         )
         image["image"] = npimg2base64(np_image)
 
@@ -71,6 +69,31 @@ class ExplanationResource(Resource):
 class SampleImagesResource(Resource):
     def get(self, n):
         return data_api.sample_images(n)
+
+
+class AttackOfTheClones(Resource):
+    def _parser(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument("word_index", type=int, required=False, default=-1)
+        parser.add_argument("epsilon", type=float, required=False, default=0.1)
+        return parser
+
+    def get(self, image_id1, image_id2):
+        image_id = "{}/{}".format(image_id1, image_id2)
+        args = self._parser().parse_args()
+        args.word_index = None if args.word_index == -1 else args.word_index
+        explanation, x_org, explanation_adv, x_adv = explanation_model.generate_adversarial(
+            image_id, epsilon=args.epsilon, word_index=args.word_index
+        )
+
+        print(x_org.shape, x_adv.shape)
+
+        return {
+            "explanation": explanation,
+            "adv_explanation": explanation_adv,
+            "image": npimg2base64(x_org),
+            "adv_image": npimg2base64(x_adv),
+        }
 
 
 class CounterFactualResource(Resource):
@@ -90,19 +113,21 @@ class CounterFactualResource(Resource):
         args = self._parser().parse_args()
 
         cf_expl, added_other, added = cf_gen.generate(
-            true_image["explanation"], false_image["explanation"], addtn_limit=args.cf_limit
+            true_image["explanation"],
+            false_image["explanation"],
+            addtn_limit=args.cf_limit,
         )
 
         return {
             "class_true": class_true,
             "class_false": class_false,
             "images": [true_image, false_image],
-            "cf_explanation": cf_expl
+            "cf_explanation": cf_expl,
         }
 
     def fill_image(self, image):
         image["explanation"], _, _ = explanation_model.generate(
-            image, word_highlights=False, adversarial=False
+            image, word_highlights=False
         )
 
         # print(image["path"])
@@ -118,6 +143,7 @@ api.add_resource(ExplanationResource, "/explain/<string:image_id1>/<string:image
 api.add_resource(
     CounterFactualResource, "/counter_factual/<string:class_true>/<string:class_false>"
 )
+api.add_resource(AttackOfTheClones, "/attack/<string:image_id1>/<string:image_id2>")
 
 if __name__ == "__main__":
     app.run(debug=False)

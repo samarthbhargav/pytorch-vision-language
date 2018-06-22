@@ -10,8 +10,9 @@ from utils.misc import get_split_str
 import torch.nn.functional as F
 from attribute_chunker import AttributeChunker
 from scipy.interpolate import interp2d
-
+import random
 import numpy as np
+from utils.transform import UnNormalize
 
 
 def get_model():
@@ -75,11 +76,19 @@ def get_model():
 
     return model, trainer, dataset, vgg_feat_layers
 
+def tensor_to_img(tensor):
+    assert tensor.dim() == 3
+    np_image = np.transpose(tensor.cpu().numpy(), (1,2,0))
+    np_image = np_image - np.min(np_image)
+    np_image = np_image * 255 / np.max(np_image)
+    np_image = np_image.astype(np.uint8)
+    return np_image
+
 class ExplanationModel:
     def __init__(self):
         self.model, self.trainer, self.dataset, self.vgg_feat_layers = get_model()
         self.chunker = AttributeChunker()
-
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     def get_features_labels(self, image_input, process_fmap_grad):
         # Forward pass until layer 28
@@ -102,7 +111,111 @@ class ExplanationModel:
 
         return features, labels
 
-    def generate(self, image, word_highlights=False, adversarial=False):
+    def compute_full_loss(self, model, trainer, image_input, captions, labels, device = "cpu"):
+        def process_fmap_grad(grad):
+            pass
+        np.random.seed(42)
+        torch.manual_seed(42)  
+        lengths = [len(cap) - 1 for cap in captions]
+        word_inputs = torch.zeros(len(captions), max(lengths)).long()
+        word_targets = torch.zeros(len(captions), max(lengths)).long()
+        for i, cap in enumerate(captions):
+            end = lengths[i]
+            word_inputs[i, :end] = cap[:-1]
+            word_targets[i, :end] = cap[1:]
+
+        labels_onehot = self.model.convert_onehot(labels)
+        labels_onehot = labels_onehot.to(device)
+    
+        features, label = self.get_features_labels(image_input, process_fmap_grad)
+        features.retain_grad()
+        
+        self.model.zero_grad()
+
+        outputs = self.model(
+            features, word_inputs, lengths, labels, labels_onehot=labels_onehot
+        )    
+
+        # Generate explanation
+        sample_ids, log_ps, lengths = self.model.generate_sentence(
+            features, self.trainer.start_word, self.trainer.end_word, label, sample=True)
+        
+        explanation = " ".join(
+            [self.dataset.vocab.get_word_from_idx(idx.item()) for idx in sample_ids]
+        )
+        
+        sample_ids = sample_ids.unsqueeze(dim=0)
+        log_ps = log_ps.unsqueeze(dim=0)
+
+        lengths = lengths.cpu().numpy()
+        sort_idx = np.argsort(-lengths)
+        lengths = lengths[sort_idx]
+        sort_idx = torch.tensor(sort_idx, device=device, dtype=torch.long)
+        labels = labels[sort_idx]
+        labels = labels.to(device)
+        log_ps = log_ps[sort_idx, :]
+        sample_ids = sample_ids[sort_idx, :]
+
+        class_pred = self.model.sentence_classifier(sample_ids, lengths)
+        class_pred = F.softmax(class_pred, dim=1)
+        rewards = class_pred.gather(1, labels.view(-1, 1)).squeeze()
+        r_loss = -(log_ps.sum(dim=1) * rewards).sum()
+
+        loss = self.trainer.rl_lambda * r_loss / labels.size(0) + self.trainer.criterion(
+            outputs, word_targets.squeeze(0)
+        )
+
+        return loss, explanation
+
+    def generate_adversarial(self, img_id, epsilon = 0.1, word_index=None):
+        
+        image_input = self.dataset.get_image(img_id).unsqueeze(dim=0)
+        image_input.requires_grad = True
+
+        label = self.dataset.get_class_label(img_id)
+        labels = self.dataset.get_class_label(img_id)
+        ann_id = random.choice(self.dataset.coco.imgToAnns[img_id])["id"]
+        
+
+        if word_index:
+            self.model.zero_grad()
+            features, label = self.get_features_labels(image_input)
+            features.retain_grad()
+        
+            outputs, log_probs = self.model.generate_sentence(features, self.trainer.start_word, self.trainer.end_word, label)
+            explanation = ' '.join([self.dataset.vocab.get_word_from_idx(idx.item()) for idx in outputs][:-1])
+
+            log_probs[word_index].backward()
+        else:
+            tokens = self.dataset.tokens[ann_id]
+            caption = []
+            caption.append(self.dataset.vocab(self.dataset.vocab.start_token))
+            caption.extend([self.dataset.vocab(token) for token in tokens])
+            caption.append(self.dataset.vocab(self.dataset.vocab.end_token))
+            captions = torch.Tensor([caption])
+    
+            loss, explanation = self.compute_full_loss(self.model, self.trainer, image_input, captions, labels, self.device)
+            loss.backward(retain_graph=True)
+        
+        x_grad  = torch.sign(image_input.grad.data)
+        x_adversarial = image_input.data + epsilon * x_grad
+        x_adversarial.requires_grad = True
+        
+        if word_index:
+            outputs_adv, _ = self.model.generate_sentence(features, self.trainer.start_word, self.trainer.end_word, label)
+            explanation_adv = ' '.join([self.dataset.vocab.get_word_from_idx(idx.item()) for idx in outputs_adv][:-1])
+        else:
+            _, explanation_adv = self.compute_full_loss(self.model, self.trainer, x_adversarial, captions, labels, self.device)
+            
+        unnorm = UnNormalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225))
+        #x_adv = tensor_to_img(unnorm(x_adversarial.squeeze(0).detach()))
+        #x_org = tensor_to_img(unnorm(image_input.squeeze(0).detach()))
+        x_adv = tensor_to_img(x_adversarial.squeeze(0).detach())
+        x_org = tensor_to_img(image_input.squeeze(0).detach())
+
+        return explanation, x_org, explanation_adv, x_adv
+    
+    def generate(self, image, word_highlights=False):
         np.random.seed(42)
         torch.manual_seed(42)
         # Grad-CAM
@@ -172,10 +285,7 @@ class ExplanationModel:
                 masked = (mask[..., np.newaxis] * np_image).astype(np.uint8)
                 word = self.dataset.vocab.get_word_from_idx(outputs[i].item())
                 word_masks[(i, word)] = masked
-        
+            
         return explanation, np_image, word_masks
 
-
-class CounterFactualExplanationModel:
-    def generate_counterfactual_explanation(self, image):
-        return image["caption"]
+    

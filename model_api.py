@@ -270,24 +270,27 @@ class ExplanationModel:
         word_masks = None
         
         if word_highlights:
-            masks = np.zeros((224, 224, len(log_probs)))
+            chunks = self.chunker.chunk(explanation)
+            
+            masks = np.zeros((224, 224, len(chunks)))
             visual = np.zeros((224, 224))
-            for i, log_p in enumerate(log_probs):
+            
+            for i, chunk in enumerate(chunks):
                 self.model.zero_grad()
-                log_probs[i].backward(retain_graph=True)
+                log_probs[chunk.position].backward(retain_graph=True)
                 masks[..., i] = visual
+            
             mask_avg = np.mean(masks, axis=2)
             
             word_masks = {}
             final_masks = np.zeros((224, 224, len(log_probs)))
-            for i, log_p in enumerate(log_probs):
+            for i, chunk in enumerate(chunks):
                 mask = masks[..., i] - mask_avg
                 mask = np.clip(mask, 0, np.max(mask))
                 mask = mask/np.max(mask)
                 # Mask the image
                 masked = (mask[..., np.newaxis] * np_image).astype(np.uint8)
-                word = self.dataset.vocab.get_word_from_idx(outputs[i].item())
-                word_masks[(i, word)] = masked
+                word_masks[(chunk.position, chunk.attribute)] = masked
             
         return explanation, np_image, word_masks
 

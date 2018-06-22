@@ -120,11 +120,22 @@ class CounterFactualResource(Resource):
             addtn_limit=args.cf_limit,
         )
 
+        cf_chunks = cf_gen.ch.chunk(cf_expl)
+        cf_chunks_form = []
+        for attr in cf_chunks:
+            cf_chunks_form.append({
+                "word": attr.attribute,
+                "position": attr.position,
+                "mask": true_image["image"]
+            })
+        
+
         return {
             "class_true": class_true,
             "class_false": class_false,
             "images": [true_image, false_image],
             "cf_explanation": cf_expl,
+            "cf_attributes": cf_chunks_form
         }
 
     def fill_image(self, image):

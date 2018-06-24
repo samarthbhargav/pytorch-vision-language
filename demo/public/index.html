@@ -56,7 +56,7 @@
                                         <div class="sample_image_conatiner">
                                             <div class="demo-card-image mdl-card mdl-shadow--2dp image_card" ng-class="{ 'current': $index == current }" ng-repeat="image in sample_images" ng-click="explain($index)">
                                                 <div class="mdl-card__title mdl-card--expand">
-                                                    <img ng-src="{{server}}/{{image.path}}" height=100 alt="">
+                                                    <img ng-src="{{image.image}}" height=112 alt="">
                                                 </div>
                                             </div>
                                         </div>
@@ -64,8 +64,8 @@
                                     <div class="explanation_container">
                                         <div class="demo-card-image mdl-card mdl-shadow--2dp image_card current">
                                             <div class="mdl-card__title mdl-card--expand">
-                                                <img ng-src="{{server}}/{{sample_images[current].path}}" height=200 alt="">
-                                                <img class="overlay" ng-show="overlayTracker[0] == $index + 1" ng-src="{{overlay}}" height=200 alt="" ng-repeat="overlay in sample_images[current].overlays">
+                                                <img ng-src="{{sample_images[current].image}}" height=224 alt="">
+                                                <img class="overlay" ng-show="overlayTracker[0] == $index + 1" ng-src="{{overlay}}" height=224 alt="" ng-repeat="overlay in sample_images[current].overlays track by $index">
                                             </div>
                                         </div>
                                         <div class="mdl-card mdl-shadow--2dp explanation_card">
@@ -78,13 +78,14 @@
                             </div>
                             <div class="adversarial">
                                 <div class="attack">
-                                    <button class="mdl-button mdl-button--colored mdl-js-button mdl-button--raised mdl-js-ripple-effect attack-button" ng-click="attack()">Adversarial Attack!</button>
+                                    <button class="mdl-button mdl-button--colored mdl-js-button mdl-button--raised mdl-js-ripple-effect attack-button" ng-click="attack()" ng-hide="attacking">Adversarial Attack!</button>
+                                    <button class="mdl-button mdl-js-button mdl-button--raised" ng-show="attacking">Attacking...</button>
                                 </div>
                                 <div class="explanation_container" ng-show="attack_image">
                                     <div class="demo-card-image mdl-card mdl-shadow--2dp image_card current">
                                         <div class="mdl-card__title mdl-card--expand">
-                                            <img ng-src="{{server}}/{{attack_image.path}}" height=200 alt="">
-                                            <img class="overlay" ng-show="overlayTracker[1] == $index + 1" ng-src="{{overlay}}" height=200 alt="" ng-repeat="overlay in attack_image.overlays">
+                                            <img ng-src="{{attack_image.image}}" height=224 alt="">
+                                            <img class="overlay" ng-show="overlayTracker[1] == $index + 1" ng-src="{{overlay}}" height=224 alt="" ng-repeat="overlay in attack_image.overlays track by $index">
                                         </div>
                                     </div>
                                     <div class="mdl-card mdl-shadow--2dp explanation_card">
@@ -113,7 +114,7 @@
                                         </div>
                                         <div class="demo-card-image mdl-card mdl-shadow--2dp image_card" ng-repeat="image in images" ng-click="select(image)">
                                             <div class="mdl-card__title mdl-card--expand">
-                                                <img ng-src="{{server}}{{image.url}}" height=250 width=300 alt="">
+                                                <img ng-src="{{image.image}}" height=224 alt="">
                                             </div>
                                             <div class="mdl-card__actions mdl-card--border">
                                                 <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect card_action">Select</a>
@@ -129,8 +130,8 @@
                                         </div>
                                         <div class="demo-card-image mdl-card mdl-shadow--2dp image_card" ng-repeat="image in images">
                                             <div class="mdl-card__title mdl-card--expand">
-                                                <img ng-src="{{server}}{{image.url}}" height=250 width=300 alt="">
-                                                <img class="overlay" ng-show="overlayTracker[$parent.$index + 2] == $index + 1" ng-src="{{overlay}}" height=250 width=300 alt="" ng-repeat="overlay in image.overlays">
+                                                <img ng-src="{{image.image}}" height=224 alt="">
+                                                <img class="overlay" ng-show="overlayTracker[$parent.$index + 2] == $index + 1" ng-src="{{overlay}}" height=224 alt="" ng-repeat="overlay in image.overlays track by $index">
                                             </div>
                                             <div class="mdl-card__supporting-text" compile="addOverlayAnchors(displayExplanation(image), $index+2).display"></div>
                                             <div class="mdl-card__actions mdl-card--border reveal_actions">

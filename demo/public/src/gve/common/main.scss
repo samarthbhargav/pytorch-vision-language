@@ -5,7 +5,7 @@
 
 .overlay {
     position: absolute;
-    opacity: 0.5;
+    opacity: 0.7;
 }
 
 .mdl-layout__tab-panel {
@@ -23,13 +23,37 @@
         color: #7FDBFF;
     }
     &.anchor2 {
-        color: #85144b;
+        color: #85144B;
     }
     &.anchor3 {
         color: #2ECC40;
     }
     &.anchor4 {
         color: #B10DC9;
+    }
+    &.anchor5 {
+        color: #FF7FDB;
+    }
+    &.anchor6 {
+        color: #4B8514;
+    }
+    &.anchor7 {
+        color: #402ECC;
+    }
+    &.anchor8 {
+        color: #C9B10D;
+    }
+    &.anchor9 {
+        color: #DBFF7F;
+    }
+    &.anchor10 {
+        color: #144B85;
+    }
+    &.anchor11 {
+        color: #CC402E;
+    }
+    &.anchor12 {
+        color: #0DC9B1;
     }
 }
 
@@ -279,11 +303,11 @@ img.article-image {
     .adversarial {
         .mdl-card {
             display: inline-block;
-            margin: 5px;
-            height: 100px;
+            margin: 10px 25px;
+            height: 116px;
             min-height: auto;
             min-width: auto;
-            width: 150px;
+            width: 116px;
             border: 2px solid transparent;
 
             &.explanation_card {
@@ -305,13 +329,16 @@ img.article-image {
         }
 
         .explanation_container {
+            position: relative;
+
             .mdl-card {
                 display: inline-block;
                 height: auto;
                 vertical-align: middle;
 
                 &.image_card {
-                    width: 30%;
+                    width: 228px;
+                    height: 228px;
 
                     img {
                         margin: auto;
@@ -325,6 +352,10 @@ img.article-image {
 
                 &.explanation_card {
                     width: 65%;
+                    position: absolute;
+                    top: 25%;
+                    right: 0;
+                    left: 240px;
                 }
             }
         }
@@ -350,6 +381,10 @@ img.article-image {
                 .mdl-card__title {
                     img {
                         margin: auto;
+
+                        &.overlay {
+                            opacity: 0;
+                        }
                     }
                 }
 

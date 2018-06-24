@@ -139,6 +139,11 @@ class CounterFactualResource(Resource):
             addtn_limit=args.cf_limit,
         )
 
+        # if no attributes were added, then 
+        # just put the explanation of the false image
+        if (len(added_other) + len(added)) == 0:
+            cf_expl = false_image["explanation"]
+
         cf_chunks = cf_gen.ch.chunk(cf_expl)
         cf_chunks_form = []
         for attr in cf_chunks:

@@ -113,7 +113,7 @@ class AttackOfTheClones(Resource):
                     "mask": npimg2base64(x_adv),
                 }
                 for a in explanation_adv_attrs
-            ]
+            ],
         }
 
 

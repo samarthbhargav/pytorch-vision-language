@@ -90,11 +90,30 @@ class AttackOfTheClones(Resource):
 
         print(x_org.shape, x_adv.shape)
 
+        explanation_attrs = explanation_model.chunker.chunk(explanation)
+        explanation_adv_attrs = explanation_model.chunker.chunk(explanation_adv)
+
         return {
             "explanation": explanation,
             "adv_explanation": explanation_adv,
             "image": npimg2base64(x_org),
             "adv_image": npimg2base64(x_adv),
+            "word_highlights": [
+                {
+                    "word": a.attribute,
+                    "position": a.position,
+                    "mask": npimg2base64(x_org),
+                }
+                for a in explanation_attrs
+            ],
+            "adv_word_highlights": [
+                {
+                    "word": a.attribute,
+                    "position": a.position,
+                    "mask": npimg2base64(x_adv),
+                }
+                for a in explanation_adv_attrs
+            ],
         }
 
 
@@ -115,27 +134,28 @@ class CounterFactualResource(Resource):
         args = self._parser().parse_args()
 
         cf_expl, added_other, added = cf_gen.generate(
-            true_image["explanation"],
             false_image["explanation"],
+            true_image["explanation"],
             addtn_limit=args.cf_limit,
         )
 
         cf_chunks = cf_gen.ch.chunk(cf_expl)
         cf_chunks_form = []
         for attr in cf_chunks:
-            cf_chunks_form.append({
-                "word": attr.attribute,
-                "position": attr.position,
-                "mask": true_image["image"]
-            })
-        
+            cf_chunks_form.append(
+                {
+                    "word": attr.attribute,
+                    "position": attr.position,
+                    "mask": true_image["image"],
+                }
+            )
 
         return {
             "class_true": class_true,
             "class_false": class_false,
             "images": [true_image, false_image],
             "cf_explanation": cf_expl,
-            "cf_attributes": cf_chunks_form
+            "cf_attributes": cf_chunks_form,
         }
 
     def fill_image(self, image):

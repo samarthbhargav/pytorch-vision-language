@@ -87,7 +87,7 @@ class CounterFactualGenerator:
                 missing_ = set(other_ch[noun]) - set(chunks[noun])
                 if len(missing_) == 0:
                     continue
-                added_attr_other.extend([Attribute(noun, adj, -1) for adj in diff_adj])
+                added_attr_other.extend([Attribute(noun, adj, -1) for adj in missing_])
                 cf_expl += "doesn't have a {} {} and ".format(" ".join(missing_), noun)
         
         cf_expl = cf_expl.strip()
@@ -101,8 +101,8 @@ if __name__ == "__main__":
     cfe = CounterFactualGenerator()
 
     cf, added, added_other = cfe.generate(
-        "this bird has a speckled belly and breast with a short pointy bill",
-        "this bird has a speckled belly and breast with a long needle like bill", addtn_limit=10)
+         "this bird is black with white on its wings and has a long pointy beak",
+        "this bird has a yellow belly and breast with a short pointy bill", addtn_limit=10)
     print(cf)
     print(added)
     print(added_other)

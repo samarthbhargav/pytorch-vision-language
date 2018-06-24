@@ -83,6 +83,6 @@ class GVETrainer(LRCNTrainer):
     def eval_step(self, image_input, ids, *args):
         # If there is an image classifier, obtain features and labels from it
         if self.model.image_classifier is not None:
-            image_input, args = self.model.image_classifier.get_features_labels(image_input)
-        return super(GVETrainer, self).eval_step(image_input, ids, args)
+            image_input, *args = self.model.image_classifier.get_features_labels(image_input)
+        return super(GVETrainer, self).eval_step(image_input, ids, *args)
 

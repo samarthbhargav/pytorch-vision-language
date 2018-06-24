@@ -46,7 +46,7 @@ class CounterFactualGenerator:
         chunks = self.to_dict(self.ch.chunk(expl))
         other_ch = self.to_dict(self.ch.chunk(other_expl))
 
-        cf_expl = "because this bird "
+        cf_expl = "this bird "
         # Case 1: Overlapping nouns
         nouns = set(chunks.keys())
         other_nouns = set(other_ch.keys())

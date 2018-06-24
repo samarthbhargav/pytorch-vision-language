@@ -134,8 +134,8 @@ class CounterFactualResource(Resource):
         args = self._parser().parse_args()
 
         cf_expl, added_other, added = cf_gen.generate(
-            true_image["explanation"],
             false_image["explanation"],
+            true_image["explanation"],
             addtn_limit=args.cf_limit,
         )
 

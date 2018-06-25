@@ -81,7 +81,7 @@ angular.module('gveApp', [])
             $http.get($scope.server + '/attack/' + $scope.sample_images[$scope.current].id).then(function (response) {
                 $scope.attack_image = response.data;
                 $scope.attack_image.class_label = $scope.sample_images[$scope.current].class_label;
-                $scope.attack_image.explanation = $scope.attack_image.adv_explanation;
+                $scope.attack_image.explanation = "this is " + $scope.attack_image.adv_explanation;
                 $scope.attack_image.word_highlights = $scope.attack_image.adv_word_highlights;
                 $scope.attack_explanation = $scope.addOverlayAnchors($scope.displayExplanation($scope.attack_image), 1).display;
                 $scope.attacking = false;

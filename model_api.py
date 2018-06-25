@@ -218,7 +218,7 @@ class ExplanationModel:
 
         return explanation, x_org, explanation_adv, x_adv
     
-    def generate(self, image, word_highlights=False):
+    def generate(self, image, word_highlights=False, per_word=False):
         np.random.seed(42)
         torch.manual_seed(42)
         # Grad-CAM
@@ -269,7 +269,7 @@ class ExplanationModel:
 
         word_masks = None
         
-        if word_highlights:
+        if word_highlights and per_word:
             chunks = self.chunker.chunk(explanation)
             
             masks = np.zeros((224, 224, len(chunks)))
@@ -279,7 +279,7 @@ class ExplanationModel:
                 self.model.zero_grad()
                 log_probs[chunk.position].backward(retain_graph=True)
                 masks[..., i] = visual
-            
+                
             mask_avg = np.mean(masks, axis=2)
             
             word_masks = {}
@@ -291,7 +291,15 @@ class ExplanationModel:
                 # Mask the image
                 masked = (mask[..., np.newaxis] * np_image).astype(np.uint8)
                 word_masks[(chunk.position, chunk.attribute)] = masked
+        elif word_highlights:
+            word_masks = {}
+            visual = np.zeros((224, 224))
+            self.model.zero_grad()
+            log_probs.sum().backward(retain_graph=True)
+            mask = visual
+            mask = np.clip(mask, 0, np.max(mask))
+            mask = mask/np.max(mask)
+            masked = (mask[..., np.newaxis] * np_image).astype(np.uint8)
+            word_masks[(0, "_all_")] = masked
             
         return explanation, np_image, word_masks
-
-    

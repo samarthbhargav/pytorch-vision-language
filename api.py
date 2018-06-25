@@ -45,6 +45,7 @@ class ExplanationResource(Resource):
     def _parser(self):
         parser = reqparse.RequestParser()
         parser.add_argument("word_highlights", type=bool, required=False, default=False)
+        parser.add_argument("per_word", type=bool, required=False, default=False)
         return parser
 
     def get(self, image_id1, image_id2):
@@ -53,7 +54,7 @@ class ExplanationResource(Resource):
         args = self._parser().parse_args()
         print(args)
         image["explanation"], np_image, word_masks = explanation_model.generate(
-            image, word_highlights=args.word_highlights
+            image, word_highlights=args.word_highlights, per_word=args.per_word
         )
         image["image"] = npimg2base64(np_image)
 
@@ -139,7 +140,7 @@ class CounterFactualResource(Resource):
             addtn_limit=args.cf_limit,
         )
 
-        # if no attributes were added, then 
+        # if no attributes were added, then
         # just put the explanation of the false image
         if (len(added_other) + len(added)) == 0:
             cf_expl = false_image["explanation"]

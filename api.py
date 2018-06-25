@@ -58,10 +58,13 @@ class ExplanationResource(Resource):
         image["image"] = npimg2base64(np_image)
 
         if args.word_highlights:
-            image["word_highlights"] = [
-                {"word": word, "position": pos, "mask": npimg2base64(mask)}
-                for ((pos, word), mask) in word_masks.items()
-            ]
+            image["word_highlights"] = []
+            for ((pos, word), mask) in word_masks.items():
+                if word == "_all_":
+                    word = image["class_label"].replace("_", " ")
+                image["word_highlights"].append(
+                    {"word": word, "position": pos, "mask": npimg2base64(mask)}
+                )
         return image
 
 
@@ -138,6 +141,11 @@ class CounterFactualResource(Resource):
             true_image["explanation"],
             addtn_limit=args.cf_limit,
         )
+
+        # if no attributes were added, then
+        # just put the explanation of the false image
+        if (len(added_other) + len(added)) == 0:
+            cf_expl = false_image["explanation"]
 
         cf_chunks = cf_gen.ch.chunk(cf_expl)
         cf_chunks_form = []

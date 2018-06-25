@@ -279,7 +279,7 @@ class ExplanationModel:
                 self.model.zero_grad()
                 log_probs[chunk.position].backward(retain_graph=True)
                 masks[..., i] = visual
-            
+                
             mask_avg = np.mean(masks, axis=2)
             
             word_masks = {}
@@ -291,7 +291,14 @@ class ExplanationModel:
                 # Mask the image
                 masked = (mask[..., np.newaxis] * np_image).astype(np.uint8)
                 word_masks[(chunk.position, chunk.attribute)] = masked
-            
-        return explanation, np_image, word_masks
 
+            # compute it for the sum of the log probs    
+            self.model.zero_grad()
+            log_probs.sum().backward(retain_graph=True)
+            mask = visual
+            mask = np.clip(mask, 0, np.max(mask))
+            mask = mask/np.max(mask)
+            masked = (mask[..., np.newaxis] * np_image).astype(np.uint8)
+            word_masks[(-1, "_all_")] = masked
     
+        return explanation, np_image, word_masks

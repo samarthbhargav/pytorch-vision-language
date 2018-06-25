@@ -47,8 +47,15 @@ angular.module('gveApp', [])
             return image;
         };
 
-        $scope.displayExplanation = function (image) {
-            image.display = "This is a <span class='class_label'>" + image.class_label.split("_").join(" ") + "</span> because " + image.explanation;
+        $scope.displayExplanation = function (image, counter) {
+            counter = counter || false;
+            var classLabel = image.class_label;
+            if(counter) {
+                var index = $scope.images.indexOf(image);
+                var labelIndex = (index + 1) % 2;
+                classLabel = $scope.images[labelIndex].class_label;
+            }
+            image.display = "This is" + (counter ? " not " : " ") + "a <span class='class_label'>" + classLabel.split("_").join(" ") + "</span> because " + image.explanation;
             return image;
         };
 

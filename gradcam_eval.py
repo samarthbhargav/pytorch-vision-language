@@ -166,9 +166,12 @@ for i, (image_input, word_inputs, word_targets, lengths, ids, *excess) in enumer
     #plt.contour(bbox_np)
     #plt.axis('off')
 
-    percentage = 1 - np.sum(mask - (bbox_np * mask)) / mask.sum()
-    grad_fractions.append(percentage)
+    fraction = 1 - np.sum(mask - (bbox_np * mask)) / mask.sum()
+    grad_fractions.append(fraction)
     #plt.title('{:.1f}% of gradient within box'.format(percentage * 100))
+    print('[{:d}/{:d}]'.format(i+1, len(dataset.coco.imgs)))
+    print('mean = {:.6f}\nstd = {:.6f}'.format(np.mean(grad_fractions),
+                                               np.std(grad_fractions)))
 
     #plt.show()
 print('Gradient-to-box ratio')

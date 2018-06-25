@@ -5,7 +5,14 @@
 
 .overlay {
     position: absolute;
-    opacity: 0.7;
+    opacity: 0.8;
+}
+
+.highlight_loader {
+    float: right;
+    padding: 5px;
+    font-size: 80%;
+    color: lightgray;
 }
 
 .mdl-layout__tab-panel {

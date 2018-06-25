@@ -59,9 +59,11 @@ angular.module('gveApp', [])
             $http.get($scope.server + '/explain/' + $scope.sample_images[$scope.current].id).then(function (response) {
                 $scope.sample_images[$scope.current] = response.data;
                 $scope.sample_explanation = $scope.displayExplanation($scope.sample_images[$scope.current]).display;
+		$scope.loadingHighlights = true;
                 $http.get($scope.server + '/explain/' + $scope.sample_images[$scope.current].id + "?word_highlights=True").then(function (response) {
                     $scope.sample_images[$scope.current] = response.data;
                     $scope.sample_explanation = $scope.addOverlayAnchors($scope.displayExplanation($scope.sample_images[$scope.current]), 0).display;
+		    $scope.loadingHighlights = false;
                 });
             });
         };

@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import os
 import numpy as np
 from scipy.interpolate import interp2d
+from utils.transform import get_transform
 
 # Get default arguments
 args = utils.arg_parser.get_args()
@@ -104,7 +105,7 @@ trainer = trainer_creator(args, model, dataset, data_loader, logger=None, device
 # (assuming the image exists in the corresponding dataset!)
 images_path = 'data/cub/images/'
 img_ids = ('070.Green_Violetear/Green_Violetear_0072_60858.jpg',)
-# img_ids = ('121.Grasshopper_Sparrow/Grasshopper_Sparrow_0078_116052.jpg'
+# img_ids = ('121.Grasshopper_Sparrow/Grasshopper_Sparrow_0078_116052.jpg',
 #     '030.Fish_Crow/Fish_Crow_0073_25977.jpg',
 #     '014.Indigo_Bunting/Indigo_Bunting_0027_11579.jpg',
 #     '047.American_Goldfinch/American_Goldfinch_0040_32323.jpg',
@@ -120,9 +121,11 @@ img_ids = ('070.Green_Violetear/Green_Violetear_0072_60858.jpg',)
 #     '026.Bronzed_Cowbird/Bronzed_Cowbird_0073_796226.jpg',
 #     '177.Prothonotary_Warbler/Prothonotary_Warbler_0033_174123.jpg')
 
-for img_id in img_ids:
+transform = get_transform('vgg16', train=False)
+
+for j, img_id in enumerate(img_ids):
     raw_image = Image.open(os.path.join(images_path, img_id))
-    image_input = dataset.get_image(img_id).unsqueeze(dim=0)
+    image_input = transform(raw_image).unsqueeze(dim=0) # dataset.get_image(img_id).unsqueeze(dim=0)
     image_input.requires_grad = True
     #label = dataset.get_class_label(img_id)
 
@@ -152,10 +155,12 @@ for img_id in img_ids:
     plt.show()
 
     masks = np.zeros((224, 224, len(log_probs)))
-
-    for i, log_p in enumerate(log_probs):
-        model.zero_grad()
-        log_probs[i].backward(retain_graph=True)
+    visual = np.zeros((224, 224))
+    model.zero_grad()
+    log_probs.sum().backward()
+    #for i, log_p in enumerate(log_probs):
+    #    print(i)
+    #    log_probs[i].backward(retain_graph=True)
 
         # Plot results
 
@@ -166,19 +171,20 @@ for img_id in img_ids:
         #plt.subplot(1, 2, 2)
         # Scale grad-cam to the interval [0, 1]
         #visual_sc = visual / np.max(visual)
-        masks[..., i] = visual#_sc**2
+        #masks[..., i] = visual#_sc**2
 
-    mask_avg = np.mean(masks, axis=2)
+    #mask_avg = np.mean(masks, axis=2)
 
-    for i, log_p in enumerate(log_probs):
-        mask = masks[..., i] - mask_avg
-        mask = np.clip(mask, 0, np.max(mask))
-        mask = mask/np.max(mask)
-        # Mask the image
-        masked = (mask[..., np.newaxis] * np_image).astype(np.uint8)
-        plt.figure(figsize=(15, 15))
-        plt.imshow(masked)
-        word = dataset.vocab.get_word_from_idx(outputs[i].item())
-        plt.title(word)
-        plt.axis('off')
-        plt.savefig('{:d}{:s}.png'.format(i+1, word))
+    #for i, log_p in enumerate(log_probs):
+    mask = visual**0.5#masks[..., i] - mask_avg
+    mask = np.clip(mask, 0, np.max(mask))
+    mask = mask/np.max(mask)
+    # Mask the image
+    masked = (mask[..., np.newaxis] * np_image).astype(np.uint8)
+    plt.figure(figsize=(15, 15))
+    plt.imshow(masked)
+    #word = dataset.vocab.get_word_from_idx(outputs[i].item())
+    #plt.title(word)
+    plt.axis('off')
+    plt.show()
+    #plt.savefig('{:d}.png'.format(j+1))

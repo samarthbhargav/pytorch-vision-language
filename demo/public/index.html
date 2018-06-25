@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>Generating Visual Explanations</title>
+        <title>Explainable AI: Combining Introspective and Justification Explanation Systems</title>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="description" content="Generating Visual Explanations">
+        <meta name="description" content="Explainable AI: Combining Introspective and Justification Explanation Systems">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
-        <title>Generating Visual Explanations</title>
         <link rel="stylesheet" href="css/lib.css">
         <link rel="stylesheet" href="css/main.css">
     </head>
@@ -15,7 +14,7 @@
             <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header mdl-layout--fixed-tabs">
                 <header class="mdl-layout__header mdl-layout__header--waterfall portfolio-header">
                     <div class="mdl-layout__header-row">
-                        <span class="mdl-layout-title">Generating Visual Explanations</span>
+                        <span class="mdl-layout-title">Explainable AI: Combining Introspective and Justification Explanation Systems</span>
                     </div>
                     <div class="mdl-layout__tab-bar portfolio-navigation-row">
                         <a href="#paper" class="mdl-layout__tab is-active">Paper</a>
@@ -27,13 +26,20 @@
                 <main class="mdl-layout__content">
                     <section class="mdl-layout__tab-panel is-active" id="paper">
                         <div class="portfolio-max-width paper-page">
-                            <h6>Explaining a classification decision can decipher why a model doesn’t work as intended. Even if a model performs well, it is beneficial to understand why it works, so a user gains trust. [1] explores a model which produces sentences that explain why a predicted label is appropriate for a given image, and is an example of a ‘justification’ explanation system which produces sentences that explain why a certain classification decision was made. In a follow up work the authors explore a new model which generates similar explanations, but utilizes localized grounding of constituent phrases, which ensures that the generated explanations are more image specific. In contrast to the two methods described above, Grad-CAM [2], an ‘introspective’ method, uses gradient information to produce a coarse localization map which highlights which part of the image led to a class decision.</h6>
-                            <h6>We propose to employ Grad-CAM instead of the methods described in [1] to produce localized maps which highlight why a class decision was made. In particular, we hope to capture which regions of the image correspond to image-specific attributes ex. If the model produces an explanation “This is a Laysan Albatross because this bird has a large wingspan, hooked yellow beak, and white belly”, corresponding regions of the image (i.e ‘hooked yellow beak’, ‘white belly’) should be highlighted. This method combines both ‘justification’ and ‘introspective’ methods, and allows a user to examine both the generated explanation and localized image regions.</h6>
+                            <div class="demo-card-wide mdl-card mdl-shadow--2dp paper-card">
+                                <div class="mdl-card__supporting-text">
+                                    <h6>Explaining a classification decision can decipher why a model does (or does not) work as intended. Even when a model performs well, it is beneficial to understand why it works, so a user gains trust. Hendricks (Hendricks et al.,2016) explores a model which produces sentences that explain why a predicted label is appropriate for a given image. In a follow up work (Hendricks et al.,2017) the authors explore a new model which generates similar explanations, but utilizes localized grounding of constituent phrases, which ensures that the generated explanations are more image specific. Instead of using bounding boxes to ground visual explanations we employ a Gradient-weighted Class Activation Mapping(Grad-CAM) as presented in (Selvaraju et al.,2016) thereby combining both ‘justification’ as well as the ‘introspective’ aspects. Grad-CAM uses the logits flowing into the final convolutional layer to produce a coarse localization map indicating which regions contributed to the classification decision. To test the model’s robustness, we run adversarial attack experiments.</h6>
+                                </div>
+                                <div class="mdl-card__actions mdl-card--border source-code-link">
+                                    <h6>The source code is available on <a target="_blank" href="https://github.com/samarthbhargav/pytorch-vision-language">GitHub</a>.</h6>
+                                </div>
+                                </div>
                             <div>
                                 References:
                                 <ol>
                                     <li>Hendricks, L.A., Akata, Z., Rohrbach, M., Donahue, J., Schiele, B. and Darrell, T., 2016, October. <b>Generating visual explanations.</b> In European Conference on Computer Vision (pp. 3-19). Springer, Cham.</li>
-                                    <li>Selvaraju, R.R., Cogswell, M., Das, A., Vedantam, R., Parikh, D. and Batra, D., 2016. <b>Grad-cam: Visual explanations from deep networks via gradient-based localization.</b> See <a href="https://arxiv.org/abs/1610.02391/v3">arXiv.org</a>, 7(8).</li>
+                                    <li>Selvaraju, R.R., Cogswell, M., Das, A., Vedantam, R., Parikh, D. and Batra, D., 2016. <b>Grad-cam: Visual explanations from deep networks via gradient-based localization.</b> See <a target="_blank" href="https://arxiv.org/abs/1610.02391/v3">arXiv.org</a>, 7(8).</li>
+                                    <li>Sharif Razavian, A., Azizpour, H., Sullivan, J. and Carlsson, S., 2014. <b>CNN features off-the-shelf: an astounding baseline for recognition.</b> In Proceedings of the IEEE conference on computer vision and pattern recognition workshops (pp. 806-813).</li>
                                 </ol>
                             </div>
                         </div>
@@ -161,8 +167,8 @@
                                     Assistant Professor with the University of Amsterdam in the Netherlands, Scientific Manager of the Delta Lab and a Senior Researcher at the Max Planck Institute for Informatics in Germany.
                                 </div>
                                 <div class="mdl-card__actions mdl-card--border">
-                                    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect card_action" href="https://ivi.fnwi.uva.nl/uvaboschdeltalab/people/zeynep-akata/">Website</a>
-                                    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect card_action" href="mailto:z.akata@uva.nl?subject=Generating Visual Explanations">Contact</a>
+                                    <a target="_blank" class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect card_action" href="https://ivi.fnwi.uva.nl/uvaboschdeltalab/people/zeynep-akata/">Website</a>
+                                    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect card_action" href="mailto:z.akata@uva.nl?subject=Explainable AI: Combining Introspective and Justification Explanation Systems">Contact</a>
                                 </div>
                             </div>
                             <div class="mdl-card mdl-shadow--2dp">
@@ -176,8 +182,8 @@
                                     Master A.I. Student at University of Amsterdam
                                 </div>
                                 <div class="mdl-card__actions mdl-card--border">
-                                    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect card_action" href="http://samarthbhargav.github.io/">Website</a>
-                                    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect card_action" href="mailto:samarth.bhargav@student.uva.nl?subject=Generating Visual Explanations">Contact</a>
+                                    <a target="_blank" class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect card_action" href="http://samarthbhargav.github.io/">Website</a>
+                                    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect card_action" href="mailto:samarth.bhargav@student.uva.nl?subject=Explainable AI: Combining Introspective and Justification Explanation Systems">Contact</a>
                                 </div>
                             </div>
                             <div class="mdl-card mdl-shadow--2dp">
@@ -191,8 +197,8 @@
                                     Master A.I. Student at University of Amsterdam
                                 </div>
                                 <div class="mdl-card__actions mdl-card--border">
-                                    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect card_action" href="https://dfdazac.github.io/">Website</a>
-                                    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect card_action" href="mailto:dfdazac@gmail.com?subject=Generating Visual Explanations">Contact</a>
+                                    <a target="_blank" class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect card_action" href="https://dfdazac.github.io/">Website</a>
+                                    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect card_action" href="mailto:dfdazac@gmail.com?subject=Explainable AI: Combining Introspective and Justification Explanation Systems">Contact</a>
                                 </div>
                             </div>
                             <div class="mdl-card mdl-shadow--2dp">
@@ -206,8 +212,8 @@
                                     Master A.I. Student at University of Amsterdam
                                 </div>
                                 <div class="mdl-card__actions mdl-card--border">
-                                    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect card_action" href="#">Website</a>
-                                    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect card_action" href="mailto:christina.winkler.94@gmail.com?subject=Generating Visual Explanations">Contact</a>
+                                    <a target="_blank" class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect card_action" href="#">Website</a>
+                                    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect card_action" href="mailto:christina.winkler.94@gmail.com?subject=Explainable AI: Combining Introspective and Justification Explanation Systems">Contact</a>
                                 </div>
                             </div>
                             <div class="mdl-card mdl-shadow--2dp">
@@ -221,8 +227,8 @@
                                     Master A.I. Student at University of Amsterdam
                                 </div>
                                 <div class="mdl-card__actions mdl-card--border">
-                                    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect card_action" href="http://gulfaraz.com/">Website</a>
-                                    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect card_action" href="mailto:gulfarazyasin@gmail.com?subject=Generating Visual Explanations">Contact</a>
+                                    <a target="_blank" class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect card_action" href="http://gulfaraz.com/">Website</a>
+                                    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect card_action" href="mailto:gulfarazyasin@gmail.com?subject=Explainable AI: Combining Introspective and Justification Explanation Systems">Contact</a>
                                 </div>
                             </div>
                         </div>

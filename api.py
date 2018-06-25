@@ -45,7 +45,6 @@ class ExplanationResource(Resource):
     def _parser(self):
         parser = reqparse.RequestParser()
         parser.add_argument("word_highlights", type=bool, required=False, default=False)
-        parser.add_argument("per_word", type=bool, required=False, default=False)
         return parser
 
     def get(self, image_id1, image_id2):
@@ -54,15 +53,18 @@ class ExplanationResource(Resource):
         args = self._parser().parse_args()
         print(args)
         image["explanation"], np_image, word_masks = explanation_model.generate(
-            image, word_highlights=args.word_highlights, per_word=args.per_word
+            image, word_highlights=args.word_highlights
         )
         image["image"] = npimg2base64(np_image)
 
         if args.word_highlights:
-            image["word_highlights"] = [
-                {"word": word, "position": pos, "mask": npimg2base64(mask)}
-                for ((pos, word), mask) in word_masks.items()
-            ]
+            image["word_highlights"] = []
+            for ((pos, word), mask) in word_masks.items():
+                if word == "_all_":
+                    word = image["class_label"].replace("_", " ")
+                image["word_highlights"].append(
+                    {"word": word, "position": pos, "mask": npimg2base64(mask)}
+                )
         return image
 
 
